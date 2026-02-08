@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: tfg
+      POSTGRES_USER: tfg
+      POSTGRES_PASSWORD: tfg
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tfg
+      SPRING_DATASOURCE_USERNAME: tfg
+      SPRING_DATASOURCE_PASSWORD: tfg
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
