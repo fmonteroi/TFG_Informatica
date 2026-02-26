@@ -1,7 +1,11 @@
 package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Match;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MatchRepository extends CrudRepository<Match, String> {
+import java.util.Optional;
+
+public interface MatchRepository extends JpaRepository<Match, String> {
+    Optional<Match> findByMatchId(String matchId);
+    boolean existsByMatchId(String matchId);
 }

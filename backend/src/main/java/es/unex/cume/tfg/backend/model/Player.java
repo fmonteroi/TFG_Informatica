@@ -16,7 +16,7 @@ public class Player {
     private String riotTagLine;
 
     @Enumerated(EnumType.STRING)
-    private Region region;
+    private Platform platform;
 
     private Integer profileIconId;
     private Integer summonerLevel;
@@ -57,12 +57,12 @@ public class Player {
         this.riotTagLine = riotTagLine;
     }
 
-    public Region getRegion() {
-        return region;
+    public Platform getPlatformRegion() {
+        return platform;
     }
 
-    public void setRegion(Region region) {
-        this.region = region;
+    public void setPlatformRegion(Platform platform) {
+        this.platform = platform;
     }
 
     public Integer getProfileIconId() {

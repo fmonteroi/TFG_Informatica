@@ -1,6 +1,6 @@
 package es.unex.cume.tfg.backend.model;
 
-public enum Region {
+public enum Platform {
     BR1,
     EUN1,
     EUW1,

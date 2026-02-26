@@ -11,5 +11,11 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
+riot:
+  api:
+    key: ${RIOT_API_KEY:}
+    connect-timeout: 3s
+    read-timeout: 3s
+
 server:
   port: 8080

@@ -1,7 +1,12 @@
 package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Participation;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ParticipationRepository extends CrudRepository<Participation, Long> {
+import java.util.List;
+
+public interface ParticipationRepository extends JpaRepository<Participation, Long> {
+    List<Participation> findByPlayerPuuid(String puuid);
+    List<Participation> findByMatchMatchId(String matchId);
+    List<Participation> findByChampionChampionIdOrderByGameStartAtDesc(Integer championId);
 }
