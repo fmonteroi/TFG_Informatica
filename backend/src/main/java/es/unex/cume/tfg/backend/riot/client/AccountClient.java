@@ -1,41 +1,44 @@
 package es.unex.cume.tfg.backend.riot.client;
 
 import es.unex.cume.tfg.backend.model.Platform;
-import es.unex.cume.tfg.backend.riot.dto.RiotAccountDto;
+import es.unex.cume.tfg.backend.riot.dto.AccountDto;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+
 /*
  * Client for ACCOUNT-V1 endpoints of Riot API.
  */
 @Component
-public class RiotAccountClient {
+public class AccountClient {
 
     private final RestClient restClient;
-    private final RiotBaseUrlBuilder riotBaseUrlBuilder;
+    private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
-    public RiotAccountClient(RestClient restClient, RiotBaseUrlBuilder riotBaseUrlBuilder, RiotErrorHandler riotErrorHandler) {
+    public AccountClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
-        this.riotBaseUrlBuilder = riotBaseUrlBuilder;
+        this.baseUrlBuilder = baseUrlBuilder;
         this.riotErrorHandler = riotErrorHandler;
     }
 
-    public RiotAccountDto fetchByRiotId(Platform platform, String gameName, String tagLine) {
-        String baseUrl = riotBaseUrlBuilder.buildRoutingBaseUrl(platform);
+    public AccountDto fetchByRiotId(Platform platform, String gameName, String tagLine) {
+        String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform); // europe.api.riotgames.com
 
-        String url = UriComponentsBuilder
+        URI uri = UriComponentsBuilder
                 .fromUriString(baseUrl)
                 .pathSegment("riot", "account", "v1", "accounts", "by-riot-id", gameName, tagLine)
+                .build()
                 .encode()
-                .toUriString();
+                .toUri();
 
         return restClient.get()
-                .uri(url)
+                .uri(uri)
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, riotErrorHandler::handleError)
-                .body(RiotAccountDto.class);
+                .body(AccountDto.class);
     }
 }

@@ -12,15 +12,15 @@ public class Player {
     @Id
     private String puuid;
 
-    private String riotGameName;
-    private String riotTagLine;
+    private String gameName;
+    private String tagLine;
 
     @Enumerated(EnumType.STRING)
     private Platform platform;
 
     private Integer profileIconId;
-    private Integer summonerLevel;
-    private Instant updatedAt;
+    private Long summonerLevel;
+    private Instant lastSyncAt;
 
     // Relations
     @OneToOne(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -41,27 +41,27 @@ public class Player {
         this.puuid = puuid;
     }
 
-    public String getRiotGameName() {
-        return riotGameName;
+    public String getGameName() {
+        return gameName;
     }
 
-    public void setRiotGameName(String riotGameName) {
-        this.riotGameName = riotGameName;
+    public void setGameName(String riotGameName) {
+        this.gameName = riotGameName;
     }
 
-    public String getRiotTagLine() {
-        return riotTagLine;
+    public String getTagLine() {
+        return tagLine;
     }
 
-    public void setRiotTagLine(String riotTagLine) {
-        this.riotTagLine = riotTagLine;
+    public void setTagLine(String tagLine) {
+        this.tagLine = tagLine;
     }
 
-    public Platform getPlatformRegion() {
+    public Platform getPlatform() {
         return platform;
     }
 
-    public void setPlatformRegion(Platform platform) {
+    public void setPlatform(Platform platform) {
         this.platform = platform;
     }
 
@@ -73,20 +73,20 @@ public class Player {
         this.profileIconId = profileIconId;
     }
 
-    public Integer getSummonerLevel() {
+    public Long getSummonerLevel() {
         return summonerLevel;
     }
 
-    public void setSummonerLevel(Integer summonerLevel) {
+    public void setSummonerLevel(Long summonerLevel) {
         this.summonerLevel = summonerLevel;
     }
 
-    public Instant getUpdatedAt() {
-        return updatedAt;
+    public Instant getLastSyncAt() {
+        return lastSyncAt;
     }
 
-    public void setUpdatedAt(Instant updatedAt) {
-        this.updatedAt = updatedAt;
+    public void setLastSyncAt(Instant lastSyncAt) {
+        this.lastSyncAt = lastSyncAt;
     }
 
     public Professional getProfessional() {

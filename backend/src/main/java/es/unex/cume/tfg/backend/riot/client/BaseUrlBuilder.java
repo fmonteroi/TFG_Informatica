@@ -5,21 +5,21 @@ import es.unex.cume.tfg.backend.riot.region.RegionMapper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RiotBaseUrlBuilder {
+public class BaseUrlBuilder {
 
     private final RegionMapper regionMapper;
 
-    public RiotBaseUrlBuilder(RegionMapper regionMapper) {
+    public BaseUrlBuilder(RegionMapper regionMapper) {
         this.regionMapper = regionMapper;
     }
 
     public String buildPlatformBaseUrl(Platform platform){
         String platformCode = regionMapper.toPlatformCode(platform);
-        return "https://" + platformCode + ".api.riotgames.com";
+        return "https://" + platformCode + ".api.riotgames.com"; // euw1.api.riotgames.com
     }
 
     public String buildRoutingBaseUrl(Platform platform){
         String routingCode = regionMapper.toRoutingCode(regionMapper.toRoutingRegion(platform));
-        return "https://" + routingCode + ".api.riotgames.com";
+        return "https://" + routingCode + ".api.riotgames.com"; // europe.api.riotgames.com
     }
 }

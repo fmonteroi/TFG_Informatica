@@ -9,5 +9,7 @@ public interface PlayerService {
 
     Optional<Player> findByPuuid(String puuid);
     boolean existsByPuuid(String puuid);
-    Player savePlayer(Platform platform, String gameName, String tagLine);
+    Player searchPlayer(Platform platform, String gameName, String tagLine);
+    Player refreshPlayer(Platform platform, String puuid);
+    Player syncPlayerForProfessional(Platform platform, String gameName, String tagLine, String puuid);
 }

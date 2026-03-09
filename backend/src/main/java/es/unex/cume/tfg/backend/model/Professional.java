@@ -9,6 +9,7 @@ public class Professional {
     @Id
     private String puuid;
 
+    private String proName;
     private String teamName;
     private String league;
     private Instant lastBuildUpdateAt;
@@ -28,6 +29,14 @@ public class Professional {
 
     public void setPuuid(String puuid) {
         this.puuid = puuid;
+    }
+
+    public String getProName() {
+        return proName;
+    }
+
+    public void setProName(String proName) {
+        this.proName = proName;
     }
 
     public String getTeamName() {

@@ -1,13 +1,15 @@
 package es.unex.cume.tfg.backend.service;
 
+import es.unex.cume.tfg.backend.exception.ChampionNotFoundException;
+import es.unex.cume.tfg.backend.model.Build;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.model.Match;
 import es.unex.cume.tfg.backend.model.Participation;
+import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.repository.ChampionRepository;
 import es.unex.cume.tfg.backend.repository.ParticipationRepository;
-import es.unex.cume.tfg.backend.repository.PlayerRepository;
-import es.unex.cume.tfg.backend.riot.dto.RiotMatchDto;
+import es.unex.cume.tfg.backend.riot.dto.MatchDto;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -19,15 +21,15 @@ import java.util.Optional;
 public class ParticipationServiceImpl implements ParticipationService {
 
     private final ParticipationRepository participationRepository;
-    private final PlayerRepository playerRepository;
     private final ChampionRepository championRepository;
+    private final PlayerSyncService playerSyncService;
 
     public ParticipationServiceImpl(ParticipationRepository participationRepository,
-                                    PlayerRepository playerRepository,
-                                    ChampionRepository championRepository) {
+                                    ChampionRepository championRepository,
+                                    PlayerSyncService playerSyncService) {
         this.participationRepository = participationRepository;
-        this.playerRepository = playerRepository;
         this.championRepository = championRepository;
+        this.playerSyncService = playerSyncService;
     }
 
     /**
@@ -38,7 +40,7 @@ public class ParticipationServiceImpl implements ParticipationService {
      */
     @Override
     public List<Participation> findByPuuid(String puuid) {
-        return participationRepository.findByPlayerPuuid(puuid);
+        return participationRepository.findByPlayerPuuidOrderByGameStartAtDesc(puuid);
     }
 
     /**
@@ -53,34 +55,34 @@ public class ParticipationServiceImpl implements ParticipationService {
     }
 
     /**
-     * Creates and saves Participation entities from a RiotMatchDto.
+     * Creates and saves Participation entities from a MatchDto.
      * Links each participation to the saved Match, the Player and the Champion.
      *
-     * @param riotMatchDto the Riot match DTO
+     * @param matchDto the Riot match DTO
      * @param match the already-saved Match entity
-     * @return the list of saved participations
+     * @param platform the platform where the match was played
      */
     @Override
-    public List<Participation> saveParticipationsFromDto(RiotMatchDto riotMatchDto, Match match) {
+    public void saveParticipationsFromDto(MatchDto matchDto, Match match, Platform platform) {
         List<Participation> participations = new ArrayList<>();
 
-        for (RiotMatchDto.Participant p : riotMatchDto.info().participants()) {
+        for (MatchDto.Participant p : matchDto.info().participants()) {
             Participation participation = new Participation();
 
             // Match
             participation.setMatch(match);
 
-            // Player (link if exists in DB)
-            Optional<Player> player = playerRepository.findByPuuid(p.puuid());
-            if (player.isPresent()) {
-                participation.setPlayer(player.get());
+            // Player
+            Player player = playerSyncService.syncBasicPlayer(p, platform);
+            participation.setPlayer(player);
+
+            // Champion
+            Optional<Champion> optionalChampion = championRepository.findById(p.championId());
+            if (optionalChampion.isEmpty()) {
+                throw new ChampionNotFoundException(p.championId());
             }
 
-            // Champion (link if exists in DB)
-            Optional<Champion> champion = championRepository.findById(p.championId());
-            if (champion.isPresent()) {
-                participation.setChampion(champion.get());
-            }
+            participation.setChampion(optionalChampion.get());
 
             // Result
             participation.setTeamId(p.teamId());
@@ -92,23 +94,26 @@ public class ParticipationServiceImpl implements ParticipationService {
             participation.setAssists(p.assists());
 
             // General information
-            participation.setGameStartAt(Instant.ofEpochMilli(riotMatchDto.info().gameStartTimestamp()));
+            participation.setGameStartAt(Instant.ofEpochMilli(matchDto.info().gameStartTimestamp()));
             participation.setTeamPosition(p.teamPosition());
-            participation.setSummoner1Id(p.summoner1Id());
-            participation.setSummoner2Id(p.summoner2Id());
 
-            // Items
-            participation.setItem0(p.item0());
-            participation.setItem1(p.item1());
-            participation.setItem3(p.item3());
-            participation.setItem4(p.item4());
-            participation.setItem5(p.item5());
-            participation.setItem6(p.item6());
+            // Build
+            Build build = new Build();
+            build.setItem0(p.item0());
+            build.setItem1(p.item1());
+            build.setItem2(p.item2());
+            build.setItem3(p.item3());
+            build.setItem4(p.item4());
+            build.setItem5(p.item5());
+            build.setItem6(p.item6());
+            build.setSummoner1Id(p.summoner1Id());
+            build.setSummoner2Id(p.summoner2Id());
+            build.setParticipation(participation);
+            participation.setBuild(build);
 
             participations.add(participation);
         }
 
-        return participationRepository.saveAll(participations);
+        participationRepository.saveAll(participations);
     }
 }
-

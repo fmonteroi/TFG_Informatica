@@ -1,6 +1,6 @@
 package es.unex.cume.tfg.backend.riot.client;
 
-import es.unex.cume.tfg.backend.riot.config.RiotApiProperties;
+import es.unex.cume.tfg.backend.riot.config.ApiProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -12,9 +12,9 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 
 @Configuration
-public class RiotRestClientConfig {
+public class RestClientConfig {
     @Bean
-    public RestClient riotRestClient(RiotApiProperties props) {
+    public RestClient riotRestClient(ApiProperties props) {
         if (props.key() == null || props.key().isBlank()) {
             throw new IllegalStateException("RIOT_API_KEY is not set.");
         }

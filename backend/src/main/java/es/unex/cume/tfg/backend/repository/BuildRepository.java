@@ -1,0 +1,31 @@
+package es.unex.cume.tfg.backend.repository;
+
+import es.unex.cume.tfg.backend.model.Build;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.Optional;
+
+public interface BuildRepository extends JpaRepository<Build, Long> {
+
+    Optional<Build> findByParticipationId(Long participationId);
+
+    @Query("""
+        SELECT b
+        FROM Build b
+        JOIN FETCH b.participation p
+        JOIN FETCH p.match m
+        JOIN FETCH p.champion c
+        JOIN FETCH p.player pl
+        JOIN FETCH pl.professional pr
+        WHERE c.championId = :championId AND m.queueId IN :queueIds
+        ORDER BY m.gameStartAt DESC
+    """)
+    List<Build> findRecentProBuildsByChampionId(@Param("championId") Integer championId,
+                                                @Param("queueIds") List<Integer> queueIds,
+                                                Pageable pageable);
+}
+

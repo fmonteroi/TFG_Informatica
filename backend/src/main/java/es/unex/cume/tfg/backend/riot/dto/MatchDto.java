@@ -2,7 +2,7 @@ package es.unex.cume.tfg.backend.riot.dto;
 
 import java.util.List;
 
-public record RiotMatchDto(
+public record MatchDto(
         Metadata metadata,
         Info info
 ) {
@@ -18,6 +18,8 @@ public record RiotMatchDto(
 
     public record Participant(
             String puuid,
+            String riotIdGameName,
+            String riotIdTagline,
             Integer championId,
             Boolean win,
             Integer kills,

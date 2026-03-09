@@ -1,8 +1,10 @@
 package es.unex.cume.tfg.backend.controller;
 
+import es.unex.cume.tfg.backend.dto.ChampionDto;
+import es.unex.cume.tfg.backend.dto.ProBuildDto;
 import es.unex.cume.tfg.backend.model.Champion;
-import es.unex.cume.tfg.backend.model.Participation;
-import es.unex.cume.tfg.backend.service.ChampionServiceImpl;
+import es.unex.cume.tfg.backend.service.BuildService;
+import es.unex.cume.tfg.backend.service.ChampionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,33 +14,73 @@ import java.util.List;
 @RequestMapping("/api/champions")
 public class ChampionController {
 
-    private final ChampionServiceImpl championServiceImpl;
+    private final ChampionService championService;
+    private final BuildService buildService;
 
-    public ChampionController(ChampionServiceImpl championServiceImpl) {
-        this.championServiceImpl = championServiceImpl;
+    public ChampionController(ChampionService championService,
+                              BuildService buildService) {
+        this.championService = championService;
+        this.buildService = buildService;
+    }
+
+    /**
+     * Finds a champion by its ID.
+     * Call: GET /api/champions/{championId}
+     *
+     * @param championId
+     * @return
+     */
+    @GetMapping("/{championId}")
+    public ResponseEntity<ChampionDto> findChampion(@PathVariable Integer championId) {
+        // Gets the champion
+        Champion champion = championService.findChampion(championId);
+
+        // Returns the champion
+        return ResponseEntity.ok(ChampionDto.fromEntity(champion));
     }
 
     /** GET /api/champions - Obtener todos los campeones */
+
+    /**
+     * Finds all champions.
+     * Call: GET /api/champions
+     *
+     * @return
+     */
     @GetMapping
-    public ResponseEntity<List<Champion>> getAllChampions() {
-        // TODO: implementar
-        return ResponseEntity.ok().build();
+    public ResponseEntity<List<ChampionDto>> findAllChampions() {
+        // Gets all champions
+        List<ChampionDto> champions = championService.findAllChampions()
+                .stream()
+                .map(ChampionDto::fromEntity)
+                .toList();
+
+        // Returns all champions
+        return ResponseEntity.ok(champions);
     }
 
-    /** GET /api/champions/{championId} - Consultar campeon por ID */
-    @GetMapping("/{championId}")
-    public ResponseEntity<Champion> getChampion(@PathVariable Integer championId) {
-        // TODO: implementar
-        return ResponseEntity.ok().build();
-    }
-
-    /** GET /api/champions/{championId}/builds?count=10 - Ver builds recientes de un campeon */
+    /**
+     * Gets recent pro builds for a champion.
+     * Call: GET /api/champions/{championId}/builds?count=10
+     *
+     * @param championId
+     * @param count
+     * @return
+     */
     @GetMapping("/{championId}/builds")
-    public ResponseEntity<List<Participation>> getRecentBuilds(
+    public ResponseEntity<List<ProBuildDto>> getRecentProBuilds(
             @PathVariable Integer championId,
             @RequestParam(defaultValue = "10") int count) {
-        // TODO: implementar
-        return ResponseEntity.ok().build();
+
+        // Check if champion exists
+        championService.findChampion(championId);
+
+        // Gets recent pro builds for champion
+        List<ProBuildDto> builds = buildService.findRecentProBuildsByChampionId(championId, count);
+
+        // Returns builds
+        return ResponseEntity.ok(builds);
     }
+
 }
 
