@@ -106,11 +106,11 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         Instant lastBuildUpdateAt = professional.getLastBuildUpdateAt();
         Instant now = Instant.now();
 
-        // If it's the first time refreshing, loads matches from the last 30 days
+        // If it's the first time refreshing, loads matches from the last 30 days (max 20)
         if (lastBuildUpdateAt == null) {
             Instant oneMonthAgo = now.minus(30, ChronoUnit.DAYS);
-            matchService.loadAllMatchesSince(platform, puuid, 100, oneMonthAgo);
-        } else { // Otherwise, loads matches since last build update
+            matchService.loadMatchesSince(platform, puuid, 20, oneMonthAgo);
+        } else { // Otherwise, loads matches since last build update (max 20)
             matchService.loadMatchesSince(platform, puuid, 20, lastBuildUpdateAt);
         }
 
@@ -128,16 +128,16 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         return List.of(
                 // KOI
                 new ProfessionalSeed(Platform.EUW1, "Elyoya", "komanche uchiha", "elite", "KOI", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Alvaro", "alvarooo", "000", "KOI", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Supa", "tukaan", "tukan", "KOI", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Myrwn", "snoopy", "kite", "KOI", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "jojopyun", "VJBYYTF0AO", "EUW", "KOI", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "Alvaro", "alvarooo", "000", "KOI", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "Supa", "tukaan", "tukan", "KOI", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "Myrwn", "snoopy", "kite", "KOI", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "jojopyun", "VJBYYTF0AO", "EUW", "KOI", "LEC"),
 
                 // G2
                 new ProfessionalSeed(Platform.EUW1, "Caps", "G2 Caps", "1323", "G2", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Labrov", "G2 Labrov", "8085", "G2", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "Labrov", "G2 Labrov", "8085", "G2", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Hans sama", "G2 Hans Sama", "12838", "G2", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "BrokenBlade", "G2 BrokenBlade", "1918", "G2", "LEC"),
+                //new ProfessionalSeed(Platform.EUW1, "BrokenBlade", "G2 BrokenBlade", "1918", "G2", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "SkewMond", "G2 SkewMond", "3327", "G2", "LEC")
         );
     }

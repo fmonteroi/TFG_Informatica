@@ -10,6 +10,7 @@ import java.time.Instant;
 public record ParticipationDto(
         Long id,
         String matchId,
+        Integer queueId,
         String puuid,
         String gameName,
         String tagLine,
@@ -53,6 +54,7 @@ public record ParticipationDto(
         return new ParticipationDto(
                 participation.getId(),
                 participation.getMatch().getMatchId(),
+                participation.getMatch().getQueueId(),
                 puuid,
                 gameName,
                 tagLine,

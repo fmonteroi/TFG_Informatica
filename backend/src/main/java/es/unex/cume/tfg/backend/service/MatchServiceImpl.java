@@ -113,6 +113,8 @@ public class MatchServiceImpl implements MatchService {
      * Fetches all matches from Riot API since a given date, paginating automatically.
      * Used when creating a new player to load their full match history.
      *
+     * Note: Unused because development api kay has very low rate limits. Used for more than 100 matches.
+     *
      * @param platform   the platform/region
      * @param puuid      the player's PUUID
      * @param maxMatches the maximum number of matches to load

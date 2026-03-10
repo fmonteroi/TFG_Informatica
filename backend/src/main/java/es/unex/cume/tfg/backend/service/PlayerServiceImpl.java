@@ -175,9 +175,9 @@ public class PlayerServiceImpl implements PlayerService {
         // Saves player so there's an ID to link matches to
         Player savedPlayer = playerRepository.save(newPlayer);
 
-        // Loads and saves all matches from last 365 days (max 1000)
-        Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
-        matchService.loadAllMatchesSince(platform, puuid, 1000, oneYearAgo);
+        // Loads and saves all matches from last 365 days (max 20)
+        Instant oneYearAgo = Instant.now().minus(90, ChronoUnit.DAYS);
+        matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
 
         // Updates lastSyncAt after loading matches
         savedPlayer.setLastSyncAt(Instant.now());

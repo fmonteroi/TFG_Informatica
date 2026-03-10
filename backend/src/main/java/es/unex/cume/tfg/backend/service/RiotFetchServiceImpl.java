@@ -66,6 +66,8 @@ public class RiotFetchServiceImpl implements RiotFetchService {
      * Fetches all match IDs for a player paginating in blocks of 100.
      * Stops when there are no more matches or the maxMatches limit is reached.
      *
+     * Note: Unused because development api kay has very low rate limits. Used for more than 100 matches.
+     *
      * @param platform   the platform/region
      * @param puuid      the player's PUUID
      * @param maxMatches the maximum number of match IDs to fetch
