@@ -30,6 +30,13 @@ public record ParticipationDto(
         Champion champion = participation.getChampion();
         Build build = participation.getBuild();
 
+        String matchId = null;
+        Integer queueId = null;
+        if (participation.getMatch() != null) {
+            matchId = participation.getMatch().getMatchId();
+            queueId = participation.getMatch().getQueueId();
+        }
+
         String puuid = null;
         String gameName = null;
         String tagLine = null;
@@ -53,8 +60,8 @@ public record ParticipationDto(
 
         return new ParticipationDto(
                 participation.getId(),
-                participation.getMatch().getMatchId(),
-                participation.getMatch().getQueueId(),
+                matchId,
+                queueId,
                 puuid,
                 gameName,
                 tagLine,

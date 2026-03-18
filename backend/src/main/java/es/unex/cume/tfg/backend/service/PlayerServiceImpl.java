@@ -6,6 +6,7 @@ import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.repository.PlayerRepository;
 import es.unex.cume.tfg.backend.riot.dto.SummonerDto;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -55,6 +56,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param tagLine
      * @return
      */
+    @Transactional
     @Override
     public Player searchPlayer(Platform platform, String gameName, String tagLine) {
         // Get PUUID from Riot's API
@@ -63,7 +65,14 @@ public class PlayerServiceImpl implements PlayerService {
         // If already exists, return the existing player
         Optional<Player> existingPlayer = playerRepository.findByPuuid(puuid);
         if (existingPlayer.isPresent()) {
-            return existingPlayer.get();
+            Player player = existingPlayer.get();
+
+            // If this player was created as "basic" (from match participants), completes initialization
+            if (player.getLastSyncAt() == null) {
+                return initExistingPlayer(player, platform);
+            }
+
+            return player;
         }
 
         // If not, creates it
@@ -78,6 +87,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @return the updated player
      */
     @Override
+    @Transactional
     public Player refreshPlayer(Platform platform, String puuid) {
         // Finds the player by PUUID
         Optional<Player> optionalPlayer = playerRepository.findByPuuid(puuid);
@@ -98,8 +108,13 @@ public class PlayerServiceImpl implements PlayerService {
         player.setProfileIconId(summonerDto.profileIconId());
         player.setSummonerLevel(summonerDto.summonerLevel());
 
-        // Load and save recent matches since last sync (max 20)
-        matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
+        // If was never synced, load matches since last year, otherwise since lastSync.
+        if (lastSyncAt == null) {
+            Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
+            matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
+        } else {
+            matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
+        }
 
         // Update timestamp after loading matches
         player.setLastSyncAt(Instant.now());
@@ -176,14 +191,36 @@ public class PlayerServiceImpl implements PlayerService {
         Player savedPlayer = playerRepository.save(newPlayer);
 
         // Loads and saves all matches from last 365 days (max 20)
-        Instant oneYearAgo = Instant.now().minus(90, ChronoUnit.DAYS);
+        Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
         matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
 
-        // Updates lastSyncAt after loading matches
+        // Set lastSync timestamp only after successful match loading
         savedPlayer.setLastSyncAt(Instant.now());
 
-        // Saves and return the updated player
         return playerRepository.save(savedPlayer);
+    }
+
+    /**
+     * Completes initialization for players that already exist but were created with basic data only.
+     *
+     * @param player
+     * @param platform
+     * @return
+     */
+    private Player initExistingPlayer(Player player, Platform platform) {
+        // Fetches summoner data (icon + level)
+        SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, player.getPuuid());
+        player.setProfileIconId(summonerDto.profileIconId());
+        player.setSummonerLevel(summonerDto.summonerLevel());
+
+        // Loads and saves all matches from last 365 days (max 20)
+        Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
+        matchService.loadMatchesSince(platform, player.getPuuid(), 20, oneYearAgo);
+
+        // Set lastSync timestamp only after successful match loading
+        player.setLastSyncAt(Instant.now());
+
+        return playerRepository.save(player);
     }
 
 }

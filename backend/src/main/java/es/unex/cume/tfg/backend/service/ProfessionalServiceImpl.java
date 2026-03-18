@@ -48,19 +48,10 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         for (ProfessionalSeed seed : seeds) {
             try {
                 // Fetches the PUUID from Riot's API
-                String puuid = riotFetchService.fetchPuuid(
-                        seed.platform(),
-                        seed.gameName(),
-                        seed.tagLine()
-                );
+                String puuid = riotFetchService.fetchPuuid(seed.platform(), seed.gameName(), seed.tagLine());
 
                 // Syncs the basic player info
-                Player player = playerService.syncPlayerForProfessional(
-                        seed.platform(),
-                        seed.gameName(),
-                        seed.tagLine(),
-                        puuid
-                );
+                Player player = playerService.syncPlayerForProfessional(seed.platform(), seed.gameName(), seed.tagLine(), puuid);
 
                 // Creates the professional
                 Professional professional = new Professional();
