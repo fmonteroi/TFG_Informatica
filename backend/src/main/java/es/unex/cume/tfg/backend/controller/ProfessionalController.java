@@ -1,6 +1,6 @@
 package es.unex.cume.tfg.backend.controller;
 
-import es.unex.cume.tfg.backend.dto.MessageResponseDto;
+import es.unex.cume.tfg.backend.dto.ProfessionalsRefreshResultDto;
 import es.unex.cume.tfg.backend.service.ProfessionalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +24,7 @@ public class ProfessionalController {
      * @return
      */
     @PostMapping("/refresh")
-    public ResponseEntity<MessageResponseDto> refreshProfessionals() {
-        professionalService.refreshProfessionals();
-        return ResponseEntity.ok(new MessageResponseDto("Professionals refreshed successfully"));
+    public ResponseEntity<ProfessionalsRefreshResultDto> refreshProfessionals() {
+        return ResponseEntity.ok(professionalService.refreshProfessionals());
     }
 }

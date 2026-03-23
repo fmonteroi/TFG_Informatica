@@ -98,22 +98,28 @@ public class ParticipationServiceImpl implements ParticipationService {
             participation.setTeamPosition(p.teamPosition());
 
             // Build
-            Build build = new Build();
-            build.setItem0(p.item0());
-            build.setItem1(p.item1());
-            build.setItem2(p.item2());
-            build.setItem3(p.item3());
-            build.setItem4(p.item4());
-            build.setItem5(p.item5());
-            build.setItem6(p.item6());
-            build.setSummoner1Id(p.summoner1Id());
-            build.setSummoner2Id(p.summoner2Id());
-            build.setParticipation(participation);
+            Build build = dtoToBuild(p, participation);
             participation.setBuild(build);
 
             participations.add(participation);
         }
 
         participationRepository.saveAll(participations);
+    }
+
+    private Build dtoToBuild(MatchDto.Participant p, Participation participation) {
+        Build build = new Build();
+        build.setItem0(p.item0());
+        build.setItem1(p.item1());
+        build.setItem2(p.item2());
+        build.setItem3(p.item3());
+        build.setItem4(p.item4());
+        build.setItem5(p.item5());
+        build.setItem6(p.item6());
+        build.setRoleBoundItem(p.roleBoundItem());
+        build.setSummoner1Id(p.summoner1Id());
+        build.setSummoner2Id(p.summoner2Id());
+        build.setParticipation(participation);
+        return build;
     }
 }

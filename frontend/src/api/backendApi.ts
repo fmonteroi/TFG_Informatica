@@ -2,123 +2,71 @@ import type {
     ChampionDto,
     CurrentGameDto,
     MatchDetailsDto,
-    MessageResponseDto,
+    ProfessionalsRefreshResultDto,
     PlayerWithParticipationsDto,
     ProBuildDto,
 } from '../types/api'
 
-// Saves backend url
+type BackendErrorBody = {
+    timestamp?: string
+    status?: number
+    error?: string
+    message?: string
+}
+
 const BASE_URL = 'http://localhost:8080'
 
-// Function to make API requests and handle errors
-async function apiRequest<T>(url: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(url, options)
+async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(`${BASE_URL}${path}`, options)
 
     if (!response.ok) {
-        throw new Error(`Error HTTP ${response.status}: ${response.statusText}`)
+        let message = `Error HTTP ${response.status}`
+
+        try {
+            const body = (await response.json()) as BackendErrorBody
+            message = body.message ?? body.error ?? message
+        } catch {
+            // si no viene JSON, dejamos el mensaje genérico
+        }
+
+        throw new Error(message)
     }
 
-    // Returns the response as JSON, typed as T
     return response.json() as Promise<T>
 }
 
-// --------------------------------------------------
-// PLAYERS
-// -------------------------------------------------
-
-// GET /api/players/search?platform=EUW1&gameName=Faker&tagLine=KR1
-export async function searchPlayer(
-    platform: string,
-    gameName: string,
-    tagLine: string
-): Promise<PlayerWithParticipationsDto> {
-    const params = new URLSearchParams({
-        platform,
-        gameName,
-        tagLine,
-    })
-
-    return apiRequest<PlayerWithParticipationsDto>(
-        `${BASE_URL}/api/players/search?${params.toString()}`
-    )
+export async function searchPlayer(platform: string, gameName: string, tagLine: string) {
+    const params = new URLSearchParams({ platform, gameName, tagLine })
+    return apiRequest<PlayerWithParticipationsDto>(`/api/players/search?${params.toString()}`)
 }
 
-// POST /api/players/refresh?platform=EUW1&puuid=puuid123
-export async function refreshPlayer(
-    platform: string,
-    puuid: string
-): Promise<PlayerWithParticipationsDto> {
-    const params = new URLSearchParams({
-        platform,
-        puuid,
-    })
-
-    return apiRequest<PlayerWithParticipationsDto>(
-        `${BASE_URL}/api/players/refresh?${params.toString()}`,
-        {
-            method: 'POST',
-        }
-    )
+export async function refreshPlayer(platform: string, puuid: string) {
+    const params = new URLSearchParams({ platform, puuid })
+    return apiRequest<PlayerWithParticipationsDto>(`/api/players/refresh?${params.toString()}`, {method: 'POST',})
 }
 
-// GET /api/players/current-game?puuid=puuid123
-export async function getCurrentGame(
-    puuid: string
-): Promise<CurrentGameDto> {
-    const params = new URLSearchParams({
-        puuid,
-    })
-
-    return apiRequest<CurrentGameDto>(
-        `${BASE_URL}/api/players/current-game?${params.toString()}`
-    )
+export async function getCurrentGame(puuid: string) {
+    const params = new URLSearchParams({ puuid })
+    return apiRequest<CurrentGameDto>(`/api/players/current-game?${params.toString()}`)
 }
 
-// POST /api/professionals/refresh
-export async function refreshProfessionals(): Promise<MessageResponseDto> {
-    return apiRequest<MessageResponseDto>(
-        `${BASE_URL}/api/professionals/refresh`,
-        {
-            method: 'POST',
-        }
-    )
+export async function refreshProfessionals() {
+    return apiRequest<ProfessionalsRefreshResultDto>('/api/professionals/refresh', {method: 'POST',})
 }
 
-// GET /api/matches/{matchId}
-export async function getMatchById(
-    matchId: string
-): Promise<MatchDetailsDto> {
-    return apiRequest<MatchDetailsDto>(
-        `${BASE_URL}/api/matches/${matchId}`
-    )
+export async function getMatchById(matchId: string) {
+    return apiRequest<MatchDetailsDto>(`/api/matches/${matchId}`)
 }
 
-// GET /api/champions/{championId}
-export async function getChampionById(
-    championId: string
-): Promise<ChampionDto> {
-    return apiRequest<ChampionDto>(
-        `${BASE_URL}/api/champions/${championId}`
-    )
+export async function getChampionById(championId: string) {
+    return apiRequest<ChampionDto>(`/api/champions/${championId}`)
 }
 
-// GET /api/champions
-export async function getAllChampions(): Promise<ChampionDto[]> {
-    return apiRequest<ChampionDto[]>(
-        `${BASE_URL}/api/champions`
-    )
+export async function getAllChampions() {
+    return apiRequest<ChampionDto[]>('/api/champions')
 }
 
-// GET /api/champions/{championId}/builds?count=10
-export async function getChampionBuilds(
-    championId: string,
-    count: number
-): Promise<ProBuildDto[]> {
-    const params = new URLSearchParams({
-        count: String(count),
-    })
-
-    return apiRequest<ProBuildDto[]>(
-        `${BASE_URL}/api/champions/${championId}/builds?${params.toString()}`
-    )
+export async function getChampionBuilds(championId: string, count: number) {
+    const params = new URLSearchParams({ count: String(count) })
+    return apiRequest<ProBuildDto[]>(`/api/champions/${championId}/builds?${params.toString()}`)
 }

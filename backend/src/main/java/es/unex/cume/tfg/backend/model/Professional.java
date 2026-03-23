@@ -12,7 +12,6 @@ public class Professional {
     private String proName;
     private String teamName;
     private String league;
-    private Instant lastBuildUpdateAt;
 
     // Relations
     @OneToOne(fetch = FetchType.LAZY)
@@ -53,14 +52,6 @@ public class Professional {
 
     public void setLeague(String league) {
         this.league = league;
-    }
-
-    public Instant getLastBuildUpdateAt() {
-        return lastBuildUpdateAt;
-    }
-
-    public void setLastBuildUpdateAt(Instant lastBuildUpdateAt) {
-        this.lastBuildUpdateAt = lastBuildUpdateAt;
     }
 
     public Player getPlayer() {

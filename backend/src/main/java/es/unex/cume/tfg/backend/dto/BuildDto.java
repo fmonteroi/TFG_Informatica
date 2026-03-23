@@ -10,6 +10,7 @@ public record BuildDto(
         Integer item4,
         Integer item5,
         Integer item6,
+        Integer roleBoundItem,
         Integer summoner1Id,
         Integer summoner2Id
 ) {
@@ -22,6 +23,7 @@ public record BuildDto(
                 build.getItem4(),
                 build.getItem5(),
                 build.getItem6(),
+                build.getRoleBoundItem(),
                 build.getSummoner1Id(),
                 build.getSummoner2Id()
         );

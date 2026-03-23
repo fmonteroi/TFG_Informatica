@@ -16,6 +16,7 @@ public class Build {
     private Integer item4;
     private Integer item5;
     private Integer item6;
+    private Integer roleBoundItem;
 
     private Integer summoner1Id;
     private Integer summoner2Id;
@@ -89,6 +90,14 @@ public class Build {
 
     public void setItem6(Integer item6) {
         this.item6 = item6;
+    }
+
+    public Integer getRoleBoundItem() {
+        return roleBoundItem;
+    }
+
+    public void setRoleBoundItem(Integer roleBoundItem) {
+        this.roleBoundItem = roleBoundItem;
     }
 
     public Integer getSummoner1Id() {

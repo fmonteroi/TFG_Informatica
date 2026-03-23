@@ -35,6 +35,7 @@ public record MatchDto(
             Integer item3,
             Integer item4,
             Integer item5,
-            Integer item6
+            Integer item6,
+            Integer roleBoundItem
     ) {}
 }

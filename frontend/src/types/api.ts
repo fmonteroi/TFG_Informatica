@@ -12,10 +12,16 @@
 
 
 // --------------------------------------------------
-// Simple message response DTO
-// MessageResponseDto in backend
+// Result of refreshing professionals DTO
+// ProfessionalsRefreshResultDto in backend
 // --------------------------------------------------
-export interface MessageResponseDto {
+export interface ProfessionalsRefreshResultDto {
+    totalProfessionals: number
+    processedProfessionals: number
+    successfulProfessionals: number
+    failedProfessionals: number
+    stoppedByRateLimit: boolean
+    stoppedAtProName: string | null
     message: string
 }
 
@@ -31,6 +37,7 @@ export interface BuildDto {
     item4: number | null
     item5: number | null
     item6: number | null
+    roleBoundItem: number | null
     summoner1Id: number | null
     summoner2Id: number | null
 }
