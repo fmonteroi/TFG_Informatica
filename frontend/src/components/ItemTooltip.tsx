@@ -1,0 +1,60 @@
+import type { ItemInfo } from '../lib/dragontail'
+
+type ItemTooltipProps = {
+    itemId: number | null | undefined
+    itemInfoMap: Map<number, ItemInfo> | null
+    sizeClassName?: string
+    roundedClassName?: string
+    emptyClassName?: string
+}
+
+function ItemTooltip({
+                         itemId,
+                         itemInfoMap,
+                         sizeClassName = 'h-10 w-10',
+                         roundedClassName = 'rounded-xl',
+                         emptyClassName = 'border border-slate-700 bg-slate-800',
+                     }: ItemTooltipProps) {
+    if (!itemId || itemId === 0) {
+        return (
+            <div className={`${sizeClassName} ${roundedClassName} ${emptyClassName}`} />
+        )
+    }
+
+    const itemInfo = itemInfoMap?.get(itemId) ?? null
+    const imageUrl = itemInfo?.imageUrl ?? `/dragontail/img/item/${itemId}.png`
+
+    return (
+        <div className="group relative">
+            <img
+                src={imageUrl}
+                alt={itemInfo?.name ?? `Item ${itemId}`}
+                className={`${sizeClassName} ${roundedClassName} shrink-0`}
+            />
+
+            {itemInfo && (
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block">
+                    <div className="mb-3 flex items-center gap-3">
+                        <img
+                            src={itemInfo.imageUrl}
+                            alt={itemInfo.name}
+                            className="h-12 w-12 rounded-xl"
+                        />
+
+                        <p className="font-bold text-slate-100">
+                            {itemInfo.name}
+                        </p>
+                    </div>
+
+                    <div
+                        className="text-sm text-slate-200 [&_maintext]:text-slate-100 [&_stats]:text-cyan-300"
+                        dangerouslySetInnerHTML={{ __html: itemInfo.description }}
+                    />
+
+                </div>
+            )}
+        </div>
+    )
+}
+
+export default ItemTooltip

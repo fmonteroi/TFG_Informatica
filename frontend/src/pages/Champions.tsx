@@ -1,37 +1,13 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { getAllChampions, getChampionBuilds, refreshProfessionals } from '../api/backendApi'
-import { getItemImageUrl, useDragontailAssets } from '../lib/dragontail'
-import type { BuildDto, ChampionDto, ProBuildDto } from '../types/api'
+import { useEffect, useState, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { getAllChampions, refreshProfessionals } from '../api/backendApi'
+import { useDragontailAssets } from '../lib/dragontail'
+import type { ChampionDto } from '../types/api'
+import { safeError } from '../lib/errors'
+import { CARD_CLASS } from '../lib/constants'
 
-const cardClass = 'rounded-2xl border border-slate-800 bg-slate-900 p-4'
 const PROFESSIONALS_REFRESH_KEY = 'professionals-last-refresh'
 const PROFESSIONALS_REFRESH_INTERVAL_MS = 30 * 60 * 1000
-
-function safeError(error: unknown) {
-    if (error instanceof Error) {
-        return error.message
-    }
-
-    return 'Ha ocurrido un error desconocido'
-}
-
-function formatDate(value: string) {
-    return new Intl.DateTimeFormat('es-ES', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-    }).format(new Date(value))
-}
-
-function queueLabel(queueId: number) {
-    if (queueId === 420) return 'Ranked Solo/Duo'
-    if (queueId === 440) return 'Ranked Flex'
-    if (queueId === 450) return 'ARAM'
-    if (queueId === 400) return 'Normal Draft'
-    if (queueId === 430) return 'Normal Blind'
-
-    return 'Modo especial'
-}
 
 async function refreshProfessionalsIfNeeded(force: boolean) {
     const lastRefreshRaw = localStorage.getItem(PROFESSIONALS_REFRESH_KEY)
@@ -49,122 +25,17 @@ async function refreshProfessionalsIfNeeded(force: boolean) {
     return result
 }
 
-function BuildStrip({
-                        build,
-                        spellMap,
-                    }: {
-    build: BuildDto
-    spellMap: Map<number, string> | null
-}) {
-    const spellIds = [build.summoner1Id, build.summoner2Id]
-
-    const mainItemIds = [
-        build.item0,
-        build.item1,
-        build.item2,
-        build.item3,
-        build.item4,
-        build.item5,
-    ]
-
-    const trinketIcon = getItemImageUrl(build.item6)
-    const roleBoundItemIcon = getItemImageUrl(build.roleBoundItem)
-
-    return (
-        <div className="space-y-3">
-            <div className="flex gap-2">
-                {spellIds.map((spellId, index) => {
-                    const spellIcon = spellId && spellMap ? spellMap.get(spellId) : null
-
-                    if (!spellIcon) {
-                        return (
-                            <div
-                                key={`spell-empty-${index}`}
-                                className="h-8 w-8 rounded-lg border border-slate-700 bg-slate-800"
-                            />
-                        )
-                    }
-
-                    return (
-                        <img
-                            key={`spell-${index}`}
-                            src={spellIcon}
-                            alt={`Summoner spell ${spellId}`}
-                            className="h-8 w-8 rounded-lg"
-                        />
-                    )
-                })}
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-                {mainItemIds.map((itemId, index) => {
-                    const itemIcon = getItemImageUrl(itemId)
-
-                    if (!itemIcon) {
-                        return (
-                            <div
-                                key={`item-empty-${index}`}
-                                className="h-10 w-10 rounded-lg border border-slate-700 bg-slate-800"
-                            />
-                        )
-                    }
-
-                    return (
-                        <img
-                            key={`item-${index}`}
-                            src={itemIcon}
-                            alt={`Item ${itemId}`}
-                            className="h-10 w-10 rounded-lg"
-                        />
-                    )
-                })}
-            </div>
-
-            <div className="flex flex-wrap gap-4">
-                {trinketIcon && (
-                    <div className="space-y-1">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">
-                            Trinket
-                        </p>
-                        <img
-                            src={trinketIcon}
-                            alt={`Trinket ${build.item6}`}
-                            className="h-10 w-10 rounded-lg"
-                        />
-                    </div>
-                )}
-
-                {roleBoundItemIcon && (
-                    <div className="space-y-1">
-                        <p className="text-xs uppercase tracking-wide text-slate-500">
-                            Slot especial
-                        </p>
-                        <img
-                            src={roleBoundItemIcon}
-                            alt={`Role bound item ${build.roleBoundItem}`}
-                            className="h-10 w-10 rounded-lg"
-                        />
-                    </div>
-                )}
-            </div>
-        </div>
-    )
-}
-
 function Champions() {
     const navigate = useNavigate()
-    const { championId } = useParams()
-
-    const { championMap, summonerSpellMap } = useDragontailAssets()
+    const { championMap } = useDragontailAssets()
 
     const [champions, setChampions] = useState<ChampionDto[]>([])
-    const [builds, setBuilds] = useState<ProBuildDto[]>([])
     const [loadingChampions, setLoadingChampions] = useState(true)
-    const [loadingBuilds, setLoadingBuilds] = useState(false)
-    const [refreshingProfessionals, setRefreshingProfessionals] = useState(false)
+    const [refreshingProfessionalsManually, setRefreshingProfessionalsManually] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [refreshMessage, setRefreshMessage] = useState<string | null>(null)
     const [refreshWarning, setRefreshWarning] = useState<string | null>(null)
+    const [searchTerm, setSearchTerm] = useState('')
 
     useEffect(() => {
         let cancelled = false
@@ -200,75 +71,53 @@ function Champions() {
     useEffect(() => {
         let cancelled = false
 
-        async function loadBuilds() {
-            if (!championId) {
-                setBuilds([])
-                return
-            }
-
-            try {
-                setLoadingBuilds(true)
-                setError(null)
-
-                const championBuilds = await getChampionBuilds(championId, 10)
-
-                if (!cancelled) {
-                    setBuilds(championBuilds)
-                }
-            } catch (error) {
-                if (!cancelled) {
-                    setError(safeError(error))
-                }
-            } finally {
-                if (!cancelled) {
-                    setLoadingBuilds(false)
-                }
-            }
-        }
-
-        void loadBuilds()
-
-        return () => {
-            cancelled = true
-        }
-    }, [championId])
-
-    useEffect(() => {
-        let cancelled = false
-
         async function refreshInBackground() {
             try {
-                setRefreshingProfessionals(true)
-
-                const result = await refreshProfessionalsIfNeeded(false)
-
-                if (!cancelled && result && championId) {
-                    const championBuilds = await getChampionBuilds(championId, 10)
-                    setBuilds(championBuilds)
-                }
+                await refreshProfessionalsIfNeeded(false)
             } catch {
-                // ignoramos errores del refresco en segundo plano
-            } finally {
-                if (!cancelled) {
-                    setRefreshingProfessionals(false)
-                }
+                // ignoramos errores del refresco silencioso
             }
         }
 
-        void refreshInBackground()
+        if (!cancelled) {
+            void refreshInBackground()
+        }
 
         return () => {
             cancelled = true
         }
-    }, [championId])
+    }, [])
 
-    async function handleSelectChampion(selectedChampionId: number) {
-        navigate(`/campeones/${selectedChampionId}`)
+    const normalizedSearch = searchTerm.trim().toLowerCase()
+
+    const searchSuggestions = normalizedSearch
+        ? champions
+            .filter((champion) =>
+                champion.championName.toLowerCase().includes(normalizedSearch),
+            )
+            .slice(0, 6)
+        : []
+
+    function handleSelectChampion(championId: number) {
+        navigate(`/campeones/${championId}`)
+    }
+
+    function handleSearchSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+
+        if (searchSuggestions.length === 0) {
+            return
+        }
+
+        handleSelectChampion(searchSuggestions[0].championId)
     }
 
     async function handleManualRefresh() {
+        if (refreshingProfessionalsManually) {
+            return
+        }
         try {
-            setRefreshingProfessionals(true)
+            setRefreshingProfessionalsManually(true)
             setError(null)
             setRefreshMessage(null)
             setRefreshWarning(null)
@@ -278,71 +127,109 @@ function Champions() {
             if (result) {
                 if (result.stoppedByRateLimit) {
                     setRefreshWarning(
-                        `Se actualizaron ${result.successfulProfessionals} de ${result.totalProfessionals} profesionales. Se alcanzó el límite de Riot.`
+                        `Se actualizaron ${result.successfulProfessionals} de ${result.totalProfessionals} profesionales. Se alcanzó el límite de Riot.`,
                     )
                 } else {
-                    setRefreshMessage(
-                        `Se actualizaron ${result.successfulProfessionals} profesionales correctamente.`
-                    )
+                    setRefreshMessage('Se actualizaron todos los profesionales correctamente.')
                 }
-            }
-
-            if (championId) {
-                const championBuilds = await getChampionBuilds(championId, 10)
-                setBuilds(championBuilds)
             }
         } catch (error) {
             setError(safeError(error))
         } finally {
-            setRefreshingProfessionals(false)
+            setRefreshingProfessionalsManually(false)
         }
     }
 
     return (
         <div className="space-y-6">
-            <section className={`${cardClass} flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between`}>
-                <div>
-                    <h1 className="text-3xl font-black">Campeones</h1>
-                    <p className="text-slate-400">
-                        Explora campeones y consulta builds recientes de profesionales.
-                    </p>
-                </div>
-
-                <button
-                    onClick={handleManualRefresh}
-                    className="rounded-xl bg-cyan-500 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-400"
-                >
-                    {refreshingProfessionals ? 'Refrescando pros...' : 'Refrescar profesionales'}
-                </button>
-            </section>
-
             {error && (
-                <section className={cardClass}>
+                <section className={CARD_CLASS}>
                     <p>Error: {error}</p>
                 </section>
             )}
 
-            {refreshMessage && (
-                <section className={cardClass}>
-                    <p className="text-emerald-400">{refreshMessage}</p>
-                </section>
-            )}
+            <section className={`${CARD_CLASS} space-y-4`}>
+                <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold">Buscar campeón</h2>
+                    </div>
 
-            {refreshWarning && (
-                <section className={cardClass}>
-                    <p className="text-amber-400">{refreshWarning}</p>
-                </section>
-            )}
+                    <button
+                        onClick={handleManualRefresh}
+                        disabled={refreshingProfessionalsManually}
+                        className={[
+                            'rounded-xl px-4 py-3 font-bold text-slate-950 transition',
+                            refreshingProfessionalsManually
+                                ? 'cursor-not-allowed bg-cyan-300'
+                                : 'bg-cyan-500 hover:bg-cyan-400',
+                        ].join(' ')}
+                    >
+                        {refreshingProfessionalsManually ? 'Refrescando pros...' : 'Refrescar profesionales'}
+                    </button>
+                </div>
 
-            {refreshingProfessionals && (
-                <section className={cardClass}>
-                    <p className="text-slate-400">
+                <div className="relative">
+                    <form onSubmit={handleSearchSubmit}>
+                        <input
+                            className="w-full rounded-2xl border border-slate-700 bg-slate-950 px-4 py-4 text-lg outline-none transition focus:border-cyan-400"
+                            placeholder="Escribe un campeón..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                        />
+                    </form>
+
+                    {searchSuggestions.length > 0 && (
+                        <div className="absolute left-0 right-0 top-full z-10 mt-2 overflow-hidden rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl">
+                            {searchSuggestions.map((champion) => {
+                                const championIcon = championMap?.get(champion.championId) ?? null
+
+                                return (
+                                    <button
+                                        key={champion.championId}
+                                        type="button"
+                                        onClick={() => handleSelectChampion(champion.championId)}
+                                        className="flex w-full items-center gap-3 border-b border-slate-800 px-4 py-3 text-left transition last:border-b-0 hover:bg-slate-900"
+                                    >
+                                        {championIcon ? (
+                                            <img
+                                                src={championIcon}
+                                                alt={champion.championName}
+                                                className="h-10 w-10 rounded-xl"
+                                            />
+                                        ) : (
+                                            <div className="h-10 w-10 rounded-xl border border-slate-700 bg-slate-800" />
+                                        )}
+
+                                        <span className="font-medium text-slate-100">
+                                            {champion.championName}
+                                        </span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    )}
+                </div>
+
+                {refreshingProfessionalsManually && (
+                    <p className="text-sm font-medium text-slate-400">
                         Actualizando partidas recientes de profesionales...
                     </p>
-                </section>
-            )}
+                )}
 
-            <section className={cardClass}>
+                {refreshMessage && (
+                    <p className="text-sm font-medium text-emerald-400">
+                        {refreshMessage}
+                    </p>
+                )}
+
+                {refreshWarning && (
+                    <p className="text-sm font-medium text-amber-400">
+                        {refreshWarning}
+                    </p>
+                )}
+            </section>
+
+            <section className={CARD_CLASS}>
                 <div className="mb-4 flex items-center justify-between">
                     <h2 className="text-2xl font-bold">Todos los campeones</h2>
                     <span className="text-sm text-slate-400">{champions.length} campeones</span>
@@ -354,18 +241,12 @@ function Champions() {
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
                         {champions.map((champion) => {
                             const championIcon = championMap?.get(champion.championId) ?? null
-                            const isSelected = championId === String(champion.championId)
 
                             return (
                                 <button
                                     key={champion.championId}
                                     onClick={() => handleSelectChampion(champion.championId)}
-                                    className={[
-                                        'rounded-2xl border p-3 text-center transition',
-                                        isSelected
-                                            ? 'border-cyan-400 bg-slate-800'
-                                            : 'border-slate-800 bg-slate-950 hover:border-slate-600',
-                                    ].join(' ')}
+                                    className="rounded-2xl border border-slate-800 bg-slate-950 p-3 text-center transition hover:border-slate-600"
                                 >
                                     {championIcon ? (
                                         <img
@@ -386,47 +267,6 @@ function Champions() {
                     </div>
                 )}
             </section>
-
-            {championId && (
-                <section className={cardClass}>
-                    <h2 className="mb-4 text-2xl font-bold">Builds recientes de profesionales</h2>
-
-                    {loadingBuilds ? (
-                        <p className="text-slate-400">Cargando builds...</p>
-                    ) : builds.length === 0 ? (
-                        <p className="text-slate-400">
-                            No hay builds disponibles para este campeón.
-                        </p>
-                    ) : (
-                        <div className="space-y-4">
-                            {builds.map((build) => (
-                                <article
-                                    key={build.buildId}
-                                    className="rounded-2xl border border-slate-800 bg-slate-950 p-4"
-                                >
-                                    <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                                        <div>
-                                            <p className="text-lg font-bold">
-                                                {build.proName} · {build.teamName} · {build.league}
-                                            </p>
-
-                                            <p className="text-slate-400">
-                                                {build.gameName}#{build.tagLine} · {build.teamPosition} · {queueLabel(build.queueId)}
-                                            </p>
-                                        </div>
-
-                                        <div className="text-sm text-slate-500">
-                                            {formatDate(build.gameStartAt)} · {build.matchId}
-                                        </div>
-                                    </div>
-
-                                    <BuildStrip build={build.build} spellMap={summonerSpellMap} />
-                                </article>
-                            ))}
-                        </div>
-                    )}
-                </section>
-            )}
         </div>
     )
 }

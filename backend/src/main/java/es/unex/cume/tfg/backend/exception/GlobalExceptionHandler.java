@@ -28,11 +28,6 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, "Champion not found", ex.getMessage());
     }
 
-    @ExceptionHandler(ParticipantNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleParticipantNotFound(ParticipantNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, "Player not found in current game participants", ex.getMessage());
-    }
-
     @ExceptionHandler(RiotApiException.class)
     public ResponseEntity<Map<String, Object>> handleRiotApiException(RiotApiException ex) {
         return buildResponse(ex.getStatus(), "Riot API error", ex.getMessage());

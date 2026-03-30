@@ -14,7 +14,7 @@ type BackendErrorBody = {
     message?: string
 }
 
-const BASE_URL = 'http://localhost:8080'
+const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
 
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${BASE_URL}${path}`, options)

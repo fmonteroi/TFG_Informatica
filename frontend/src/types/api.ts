@@ -103,6 +103,7 @@ export interface PlayerWithParticipationsDto {
 // --------------------------------------------------
 export interface CurrentGameDto {
     inGame: boolean
+    hidden: boolean
     queueId: number | null
     queueName: string | null
     gameLengthSeconds: number | null

@@ -1,7 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
 import es.unex.cume.tfg.backend.dto.CurrentGameDto;
-import es.unex.cume.tfg.backend.exception.ParticipantNotFoundException;
 import es.unex.cume.tfg.backend.exception.PlayerNotFoundException;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.model.Player;
@@ -38,7 +37,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
         Optional<Player> optionalPlayer = playerService.findByPuuid(puuid);
 
         // If player is not found, throws exception
-        if (optionalPlayer.isEmpty()){
+        if (optionalPlayer.isEmpty()) {
             throw new PlayerNotFoundException(puuid);
         }
 
@@ -56,9 +55,9 @@ public class CurrentGameServiceImpl implements CurrentGameService {
         CurrentGameInfoDto currentGame = optionalCurrentGame.get();
         CurrentGameInfoDto.CurrentGameParticipant participant = findParticipantByPuuid(currentGame, puuid);
 
-        // If participant is not found, throws exception
+        // If participant cannot be identified, treats it as hiddenGame state
         if (participant == null) {
-            throw new ParticipantNotFoundException(puuid);
+            return CurrentGameDto.hiddenGame();
         }
 
         // Finds champion info and resolves queue name
@@ -83,15 +82,15 @@ public class CurrentGameServiceImpl implements CurrentGameService {
      * @return
      */
     private CurrentGameInfoDto.CurrentGameParticipant findParticipantByPuuid(CurrentGameInfoDto currentGame, String puuid) {
-
         for (CurrentGameInfoDto.CurrentGameParticipant participant : currentGame.participants()) {
-            if (participant.puuid().equals(puuid)) {
+            if (participant.puuid() != null && participant.puuid().equals(puuid)) {
                 return participant;
             }
         }
 
         return null;
     }
+
 
     /**
      * Resolves the queue name from the queue ID.

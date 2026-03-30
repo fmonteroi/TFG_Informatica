@@ -134,7 +134,7 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         }
 
         // Updates last sync time
-        player.setLastSyncAt(lastSyncAt);
+        player.setLastSyncAt(Instant.now());
         professionalRepository.save(professional);
     }
 
