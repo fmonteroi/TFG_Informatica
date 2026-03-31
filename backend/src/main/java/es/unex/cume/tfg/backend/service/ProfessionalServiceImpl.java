@@ -86,7 +86,6 @@ public class ProfessionalServiceImpl implements ProfessionalService {
             return new ProfessionalsRefreshResultDto(
                     0,
                     0,
-                    0,
                     false,
                     "Ya hay un refresco de profesionales en curso."
             );
@@ -95,22 +94,22 @@ public class ProfessionalServiceImpl implements ProfessionalService {
         try {
             List<Professional> professionals = professionalRepository.findAllWithPlayer();
 
-            int processed = 0;
-            int successful = 0;
+            int checked = 0;
             boolean stoppedByRateLimit = false;
+
             for (Professional professional : professionals) {
                 try {
                     refreshProfessional(professional);
-                    successful++;
-                    processed++;
+                    checked++;
                 } catch (RiotApiException ex) {
-                    processed++;
                     if (ex.getStatus().value() == 429) {
                         stoppedByRateLimit = true;
                         break;
                     }
+
+                    checked++;
                 } catch (Exception ex) {
-                    processed++;
+                    checked++;
                 }
             }
 
@@ -121,9 +120,9 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 message = "Refresco completado.";
             }
 
-            message = message + " Se actualizaron " + successful + "/" + professionals.size() + " profesionales.";
+            message = message + " Se actualizaron " + checked + "/" + professionals.size() + " profesionales.";
 
-            return new ProfessionalsRefreshResultDto(professionals.size(), processed, successful, stoppedByRateLimit, message);
+            return new ProfessionalsRefreshResultDto(professionals.size(), checked, stoppedByRateLimit, message);
         } finally {
             professionalsRefreshLock.unlock();
         }

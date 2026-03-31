@@ -17,11 +17,8 @@
 // --------------------------------------------------
 export interface ProfessionalsRefreshResultDto {
     totalProfessionals: number
-    processedProfessionals: number
-    successfulProfessionals: number
-    failedProfessionals: number
+    checkedProfessionals: number
     stoppedByRateLimit: boolean
-    stoppedAtProName: string | null
     message: string
 }
 

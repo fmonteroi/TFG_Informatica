@@ -2,8 +2,7 @@ package es.unex.cume.tfg.backend.dto;
 
 public record ProfessionalsRefreshResultDto(
         int totalProfessionals,
-        int processedProfessionals,
-        int successfulProfessionals,
+        int checkedProfessionals,
         boolean stoppedByRateLimit,
         String message
 ) {}
