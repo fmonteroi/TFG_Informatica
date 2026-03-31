@@ -12,4 +12,5 @@ public interface PlayerService {
     Player searchPlayer(Platform platform, String gameName, String tagLine);
     Player refreshPlayer(Platform platform, String puuid);
     Player syncPlayerForProfessional(Platform platform, String gameName, String tagLine, String puuid);
+
 }

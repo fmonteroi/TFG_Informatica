@@ -30,6 +30,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RiotApiException.class)
     public ResponseEntity<Map<String, Object>> handleRiotApiException(RiotApiException ex) {
+        if (ex.getStatus().value() == 429) {
+            return buildResponse(HttpStatus.TOO_MANY_REQUESTS, "Rate limit", "Se ha alcanzado el límite de Riot. Inténtalo de nuevo en 2 minutos.");
+        }
         return buildResponse(ex.getStatus(), "Riot API error", ex.getMessage());
     }
 

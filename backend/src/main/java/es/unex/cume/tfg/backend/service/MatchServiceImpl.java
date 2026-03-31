@@ -7,11 +7,13 @@ import es.unex.cume.tfg.backend.model.Participation;
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.repository.MatchRepository;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -170,15 +172,21 @@ public class MatchServiceImpl implements MatchService {
      */
     private List<Match> saveMatches(Platform platform, List<String> matchIds) {
         List<Match> savedMatches = new ArrayList<>();
-        for (String matchId : matchIds) {
-            if (!matchRepository.existsByMatchId(matchId)) {
-                MatchDto matchDto = riotFetchService.fetchMatchByMatchId(platform, matchId);
-                Match match = toEntity(matchDto);
+        for (String matchId : new LinkedHashSet<>(matchIds)) {
+            // If match already exists, skips it to avoid duplicates
+            if (matchRepository.existsByMatchId(matchId)) {
+                continue;
+            }
+
+            MatchDto matchDto = riotFetchService.fetchMatchByMatchId(platform, matchId);
+            Match match = toEntity(matchDto);
+
+            try {
                 Match savedMatch = matchRepository.save(match);
-
                 participationService.saveParticipationsFromDto(matchDto, savedMatch, platform);
-
                 savedMatches.add(savedMatch);
+            } catch (DataIntegrityViolationException ex) {
+                // Another refresh inserted the same match while this one was processing it.
             }
         }
         return savedMatches;

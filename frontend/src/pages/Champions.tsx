@@ -20,7 +20,9 @@ async function refreshProfessionalsIfNeeded(force: boolean) {
     }
 
     const result = await refreshProfessionals()
-    localStorage.setItem(PROFESSIONALS_REFRESH_KEY, String(now))
+    if (result.message !== 'Ya hay un refresco de profesionales en curso.') {
+        localStorage.setItem(PROFESSIONALS_REFRESH_KEY, String(now))
+    }
 
     return result
 }
@@ -75,7 +77,7 @@ function Champions() {
             try {
                 await refreshProfessionalsIfNeeded(false)
             } catch {
-                // ignoramos errores del refresco silencioso
+                // ignores any error
             }
         }
 
@@ -125,14 +127,13 @@ function Champions() {
             const result = await refreshProfessionalsIfNeeded(true)
 
             if (result) {
-                if (result.stoppedByRateLimit) {
-                    setRefreshWarning(
-                        `Se actualizaron ${result.successfulProfessionals} de ${result.totalProfessionals} profesionales. Se alcanzó el límite de Riot.`,
-                    )
+                if (result.stoppedByRateLimit || result.message === 'Ya hay un refresco de profesionales en curso.') {
+                    setRefreshWarning(result.message)
                 } else {
-                    setRefreshMessage('Se actualizaron todos los profesionales correctamente.')
+                    setRefreshMessage(result.message)
                 }
             }
+
         } catch (error) {
             setError(safeError(error))
         } finally {

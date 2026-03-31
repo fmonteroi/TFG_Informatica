@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
@@ -18,6 +20,10 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final RiotFetchService riotFetchService;
     private final MatchService matchService;
+
+    // Lock map to prevent concurrent refreshes for the same player
+    private final ConcurrentHashMap<String, ReentrantLock> refreshLocks = new ConcurrentHashMap<>();
+
 
     public PlayerServiceImpl(PlayerRepository playerRepository, RiotFetchService riotFetchService, MatchService matchService) {
         this.playerRepository = playerRepository;
@@ -62,21 +68,33 @@ public class PlayerServiceImpl implements PlayerService {
         // Get PUUID from Riot's API
         String puuid = riotFetchService.fetchPuuid(platform, gameName, tagLine);
 
-        // If already exists, return the existing player
-        Optional<Player> existingPlayer = playerRepository.findByPuuid(puuid);
-        if (existingPlayer.isPresent()) {
-            Player player = existingPlayer.get();
+        ReentrantLock lock = getPlayerLock(puuid);
+        lock.lock();
 
-            // If this player was created as "basic" (from match participants), completes initialization
-            if (player.getLastSyncAt() == null) {
-                return initExistingPlayer(player, platform);
+        try {
+
+            // If already exists, return the existing player
+            Optional<Player> existingPlayer = playerRepository.findByPuuid(puuid);
+            if (existingPlayer.isPresent()) {
+                Player player = existingPlayer.get();
+
+                // If this player was created as "basic" (from match participants), completes initialization
+                if (player.getLastSyncAt() == null) {
+                    return initExistingPlayer(player, platform);
+                }
+
+                return player;
             }
 
-            return player;
-        }
+            // If not, creates it
+            return savePlayer(puuid, platform, gameName, tagLine);
+        } finally {
+            lock.unlock();
 
-        // If not, creates it
-        return savePlayer(puuid, platform, gameName, tagLine);
+            if (!lock.isLocked() && !lock.hasQueuedThreads()) {
+                refreshLocks.remove(puuid, lock);
+            }
+        }
     }
 
     /**
@@ -89,38 +107,50 @@ public class PlayerServiceImpl implements PlayerService {
     @Override
     @Transactional
     public Player refreshPlayer(Platform platform, String puuid) {
-        // Finds the player by PUUID
-        Optional<Player> optionalPlayer = playerRepository.findByPuuid(puuid);
+        ReentrantLock lock = getPlayerLock(puuid);
+        lock.lock();
 
-        // If player doesn't exist, throw an exception
-        if (optionalPlayer.isEmpty()) {
-            throw new PlayerNotFoundException(puuid);
+        try {
+            // Finds the player by PUUID
+            Optional<Player> optionalPlayer = playerRepository.findByPuuid(puuid);
+
+            // If player doesn't exist, throw an exception
+            if (optionalPlayer.isEmpty()) {
+                throw new PlayerNotFoundException(puuid);
+            }
+
+            // If player exists, gets it
+            Player player = optionalPlayer.get();
+
+            // Gets last sync to know from when to load new matches
+            Instant lastSyncAt = player.getLastSyncAt();
+
+            // Updates summoner data (icon, level)
+            SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, puuid);
+            player.setProfileIconId(summonerDto.profileIconId());
+            player.setSummonerLevel(summonerDto.summonerLevel());
+
+            // If was never synced, load matches since last year, otherwise since lastSync.
+            if (lastSyncAt == null) {
+                Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
+                matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
+            } else {
+                matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
+            }
+
+            // Update timestamp after loading matches
+            player.setLastSyncAt(Instant.now());
+
+            // Saves and return the updated player
+            return playerRepository.save(player);
+
+        } finally {
+            lock.unlock();
+
+            if (!lock.isLocked() && !lock.hasQueuedThreads()) {
+                refreshLocks.remove(puuid, lock);
+            }
         }
-
-        // If player exists, gets it
-        Player player = optionalPlayer.get();
-
-        // Gets last sync to know from when to load new matches
-        Instant lastSyncAt = player.getLastSyncAt();
-
-        // Updates summoner data (icon, level)
-        SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, puuid);
-        player.setProfileIconId(summonerDto.profileIconId());
-        player.setSummonerLevel(summonerDto.summonerLevel());
-
-        // If was never synced, load matches since last year, otherwise since lastSync.
-        if (lastSyncAt == null) {
-            Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
-            matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
-        } else {
-            matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
-        }
-
-        // Update timestamp after loading matches
-        player.setLastSyncAt(Instant.now());
-
-        // Saves and return the updated player
-        return playerRepository.save(player);
     }
 
     /**
@@ -221,6 +251,16 @@ public class PlayerServiceImpl implements PlayerService {
         player.setLastSyncAt(Instant.now());
 
         return playerRepository.save(player);
+    }
+
+    /**
+     * Gets the lock for a player to prevent concurrent refreshes. If the lock doesn't exist, creates it.
+     *
+     * @param puuid
+     * @return
+     */
+    private ReentrantLock getPlayerLock(String puuid) {
+        return refreshLocks.computeIfAbsent(puuid, key -> new ReentrantLock());
     }
 
 }

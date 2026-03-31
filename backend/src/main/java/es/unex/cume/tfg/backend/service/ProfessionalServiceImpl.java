@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Service
 public class ProfessionalServiceImpl implements ProfessionalService {
@@ -19,6 +20,10 @@ public class ProfessionalServiceImpl implements ProfessionalService {
     private final PlayerService playerService;
     private final RiotFetchService riotFetchService;
     private final MatchService matchService;
+
+    // To prevent multiple professional refresh jobs from running at the same time.
+    private final ReentrantLock professionalsRefreshLock = new ReentrantLock();
+
 
     public ProfessionalServiceImpl(
             ProfessionalRepository professionalRepository,
@@ -78,37 +83,51 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
     @Override
     public ProfessionalsRefreshResultDto refreshProfessionals() {
-        List<Professional> professionals = professionalRepository.findAllWithPlayer();
+        if (!professionalsRefreshLock.tryLock()) {
+            return new ProfessionalsRefreshResultDto(
+                    0,
+                    0,
+                    0,
+                    false,
+                    "Ya hay un refresco de profesionales en curso."
+            );
+        }
 
-        int processed = 0;
-        int successful = 0;
-        boolean stoppedByRateLimit = false;
-        for (Professional professional : professionals) {
-            try {
-                refreshProfessional(professional);
-                successful++;
-                processed++;
-            } catch (RiotApiException ex) {
-                processed++;
-                if (ex.getStatus().value() == 429) {
-                    stoppedByRateLimit = true;
-                    break;
+        try {
+            List<Professional> professionals = professionalRepository.findAllWithPlayer();
+
+            int processed = 0;
+            int successful = 0;
+            boolean stoppedByRateLimit = false;
+            for (Professional professional : professionals) {
+                try {
+                    refreshProfessional(professional);
+                    successful++;
+                    processed++;
+                } catch (RiotApiException ex) {
+                    processed++;
+                    if (ex.getStatus().value() == 429) {
+                        stoppedByRateLimit = true;
+                        break;
+                    }
+                } catch (Exception ex) {
+                    processed++;
                 }
-            } catch (Exception ex) {
-                processed++;
             }
+
+            String message;
+            if (stoppedByRateLimit) {
+                message = "Rate Limit alcanzado.";
+            } else {
+                message = "Refresco completado.";
+            }
+
+            message = message + " Se actualizaron " + successful + "/" + professionals.size() + " profesionales.";
+
+            return new ProfessionalsRefreshResultDto(professionals.size(), processed, successful, stoppedByRateLimit, message);
+        } finally {
+            professionalsRefreshLock.unlock();
         }
-
-        String message;
-        if (stoppedByRateLimit) {
-            message = "Rate Limit alcanzado.";
-        } else {
-            message = "Refresco completado.";
-        }
-
-        message = message + " Se procesaron " + successful + "/" + professionals.size() + " profesionales.";
-
-        return new ProfessionalsRefreshResultDto(professionals.size(), processed, successful, stoppedByRateLimit, message);
     }
 
 
@@ -157,7 +176,42 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 new ProfessionalSeed(Platform.EUW1, "Labrov", "G2 Labrov", "8085", "G2", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Hans sama", "G2 Hans Sama", "12838", "G2", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "BrokenBlade", "G2 BrokenBlade", "1918", "G2", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "SkewMond", "G2 SkewMond", "3327", "G2", "LEC")
+                new ProfessionalSeed(Platform.EUW1, "SkewMond", "G2 SkewMond", "3327", "G2", "LEC"),
+
+                // Fnatic
+                new ProfessionalSeed(Platform.EUW1, "Razork", "Razørk Activoo", "razzz", "Fnatic", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Vladi", "J1HUIV", "000", "Fnatic", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Upset", "afkdoks", "3101", "Fnatic", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Empyros", "pt4", "000", "Fnatic", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Lospa", "i want to win", "이기고싶다", "Fnatic", "LEC"),
+
+                // GIANTX
+                new ProfessionalSeed(Platform.EUW1, "Lot", "chenzelot", "LOT", "GIANTX", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "ISMA", "ismααα", "EUW", "GIANTX", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Jackies", "Michael Jackson", "MJWIN", "GIANTX", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Noah", "GX Monkey", "XDD", "GIANTX", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Jun", "Guilhoto", "Messi", "GIANTX", "LEC"),
+
+                // KC
+                new ProfessionalSeed(Platform.EUW1, "Canna", "Katze", "myao", "KC", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Yike", "KC Yiken", "1111", "KC", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "kyeahoo", "Left Hand", "korea", "KC", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Caliste", "KC NEXT ADKING", "EUW", "KC", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Busio", "basil", "fan", "KC", "LEC"),
+
+                // NAVI
+                new ProfessionalSeed(Platform.EUW1, "Maynter", "Maynter", "EUW", "NAVI", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Rhilech", "Rhilech", "15105", "NAVI", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Poby", "T1 cloud", "2007", "NAVI", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "SamD", "T1 Smash", "2006", "NAVI", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Parus", "Thumbs Down", "4847", "NAVI", "LEC"),
+
+                // Vitality
+                new ProfessionalSeed(Platform.EUW1, "Naak Nako", "El Matador", "VIT", "Vitality", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Lyncas", "JG top boy", "lync1", "Vitality", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Humanoid", "Marek Brazda1", "DOG", "Vitality", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Carzzy", "hovinko z kose", "marek", "Vitality", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Fleshy", "VIT Fleshy", "EU1", "Vitality", "LEC")
         );
     }
 

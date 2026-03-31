@@ -4,6 +4,7 @@ import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.repository.PlayerRepository;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -47,6 +48,18 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
         player.setPlatform(platform);
         player.setGameName(participant.riotIdGameName());
         player.setTagLine(participant.riotIdTagline());
-        return playerRepository.save(player);
+
+        try {
+            return playerRepository.save(player);
+        } catch (DataIntegrityViolationException ex) {
+            // Another process inserted the same player while this one was trying to save it.
+            Optional<Player> existingPlayer = playerRepository.findByPuuid(participant.puuid());
+
+            if (existingPlayer.isPresent()) {
+                return existingPlayer.get();
+            }
+
+            throw ex;
+        }
     }
 }
