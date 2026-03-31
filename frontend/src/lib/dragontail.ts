@@ -26,9 +26,10 @@ export type ItemInfo = {
     imageUrl: string
 }
 
-const DRAGONTAIL_BASE = '/dragontail'
-const EN_DATA_BASE = `${DRAGONTAIL_BASE}/data/en_US`
-const ES_DATA_BASE = `${DRAGONTAIL_BASE}/data/es_ES`
+const DRAGONTAIL_VERSION = '16.6.1'
+const DRAGONTAIL_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}`
+const EN_DATA_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}/data/en_US`
+const ES_DATA_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}/data/es_ES`
 const IMG_BASE = `${DRAGONTAIL_BASE}/img`
 
 let championMapPromise: Promise<Map<number, string>> | null = null

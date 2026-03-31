@@ -1,4 +1,4 @@
-import {NavLink, Route, Routes} from 'react-router-dom'
+import {Link, NavLink, Route, Routes} from 'react-router-dom'
 import Home from './pages/Home'
 import Player from './pages/Player'
 import Champions from './pages/Champions'
@@ -19,9 +19,9 @@ function App() {
         <div className="min-h-screen bg-slate-950 text-slate-100">
             <header className="border-b border-slate-800 bg-slate-900">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5">
-                    <div>
-                        <p className="text-3xl font-bold">EasyRift</p>
-                    </div>
+                    <Link to="/" className="text-3xl font-bold">
+                        EasyRift
+                    </Link>
 
                     <nav className="flex flex-wrap gap-2">
                         <NavLink to="/" className={navClass}>

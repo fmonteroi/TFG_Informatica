@@ -4,12 +4,13 @@ import {getCurrentGame, getMatchById, refreshPlayer, searchPlayer} from '../api/
 import PlayerSearchBar from '../components/player/PlayerSearchBar.tsx'
 import {useDragontailAssets} from '../lib/dragontail'
 import type {CurrentGameDto, MatchDetailsDto, ParticipationDto, PlayerWithParticipationsDto} from '../types/api'
-import { safeError } from '../lib/errors'
+import { getPlayerSearchErrorMessage, safeError } from '../lib/errors'
 import { sortMatchParticipations } from '../lib/lol'
 import { CARD_CLASS } from '../lib/constants'
 import PlayerHeader from '../components/player/PlayerHeader.tsx'
 import PlayerSidebar from '../components/player/PlayerSidebar.tsx'
 import PlayerHistory from '../components/player/PlayerHistory.tsx'
+
 
 
 
@@ -64,7 +65,7 @@ function Player() {
                 }
             } catch (error) {
                 if (!cancelled) {
-                    setPlayerError(safeError(error))
+                    setPlayerError(getPlayerSearchErrorMessage(error))
                 }
             } finally {
                 if (!cancelled) {
@@ -190,7 +191,7 @@ function Player() {
 
             {!loadingPlayer && playerError && (
                 <section className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-                    <p>Error: {playerError}</p>
+                    <p>{playerError}</p>
                 </section>
             )}
 
