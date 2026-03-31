@@ -4,6 +4,7 @@ import es.unex.cume.tfg.backend.dto.ProfessionalsRefreshResultDto;
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.model.Professional;
+import es.unex.cume.tfg.backend.repository.PlayerRepository;
 import es.unex.cume.tfg.backend.repository.ProfessionalRepository;
 import es.unex.cume.tfg.backend.riot.client.RiotApiException;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ProfessionalServiceImpl implements ProfessionalService {
 
     private final ProfessionalRepository professionalRepository;
+    private final PlayerRepository playerRepository;
     private final PlayerService playerService;
     private final RiotFetchService riotFetchService;
     private final MatchService matchService;
@@ -27,11 +29,13 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
     public ProfessionalServiceImpl(
             ProfessionalRepository professionalRepository,
+            PlayerRepository playerRepository,
             PlayerService playerService,
             RiotFetchService riotFetchService,
             MatchService matchService
     ) {
         this.professionalRepository = professionalRepository;
+        this.playerRepository = playerRepository;
         this.playerService = playerService;
         this.riotFetchService = riotFetchService;
         this.matchService = matchService;
@@ -152,7 +156,7 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
         // Updates last sync time
         player.setLastSyncAt(Instant.now());
-        professionalRepository.save(professional);
+        playerRepository.save(player);
     }
 
     /**
