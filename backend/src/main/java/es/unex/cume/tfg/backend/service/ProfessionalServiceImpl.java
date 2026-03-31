@@ -42,12 +42,6 @@ public class ProfessionalServiceImpl implements ProfessionalService {
      */
     @Override
     public void initProfessionals() {
-        // If there are already professionals, it returns
-        if (professionalRepository.count() > 0) {
-            return;
-        }
-
-        // Otherwise, it initializes the professionals from the seeds
         List<ProfessionalSeed> seeds = getInitialProfessionals();
 
         // For each seed, it fetches the puuid, syncs the basic player and creates the professional
@@ -59,7 +53,12 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 // Syncs the basic player info
                 Player player = playerService.syncPlayerForProfessional(seed.platform(), seed.gameName(), seed.tagLine(), puuid);
 
-                // Creates the professional
+                // If this player is already linked to a professional, skip it
+                if (player.getProfessional() != null) {
+                    continue;
+                }
+
+                // Otherwise, creates the professional
                 Professional professional = new Professional();
                 professional.setPlayer(player);
                 professional.setProName(seed.proName());
