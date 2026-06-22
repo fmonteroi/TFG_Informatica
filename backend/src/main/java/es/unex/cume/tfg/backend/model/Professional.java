@@ -2,8 +2,9 @@ package es.unex.cume.tfg.backend.model;
 
 import jakarta.persistence.*;
 
-import java.time.Instant;
-
+/**
+ * Entity that marks a player as a professional competitor.
+ */
 @Entity
 public class Professional {
     @Id

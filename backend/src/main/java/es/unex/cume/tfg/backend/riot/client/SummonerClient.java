@@ -9,7 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
-/*
+/**
  * Client for SUMMONER-V4 endpoints of Riot API.
  */
 @Component
@@ -25,6 +25,13 @@ public class SummonerClient {
         this.riotErrorHandler = riotErrorHandler;
     }
 
+    /**
+     * Fetches summoner profile data by PUUID.
+     *
+     * @param platform the Riot platform.
+     * @param puuid the player PUUID.
+     * @return the Riot summoner DTO.
+     */
     public SummonerDto fetchByPuuid(Platform platform, String puuid) {
         String baseUrl = baseUrlBuilder.buildPlatformBaseUrl(platform); // euw1.api.riotgames.com
 

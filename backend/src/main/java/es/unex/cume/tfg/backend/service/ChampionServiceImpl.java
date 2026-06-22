@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Default implementation of ChampionService.
+ */
 @Service
 public class ChampionServiceImpl implements ChampionService {
 
@@ -49,40 +52,29 @@ public class ChampionServiceImpl implements ChampionService {
     }
 
     /**
-     * Initializes the champion data in db if it's empty.
+     * Synchronizes champion data from the local JSON catalog.
      */
     @Override
     public void initChampions() {
-        // If there are already champions in the database, it returns
-        if (championRepository.count() > 0) {
-            return;
-        }
-
-        // Otherwise, it loads champion seeds from the JSON file and saves them in the database
         List<ChampionJsonLoader.ChampionSeed> championSeeds = championJsonLoader.loadChampionSeeds();
         List<Champion> champions = new ArrayList<>();
 
-        // For each champion seed, it creates a champion and adds it to the list of champions to save
         for (ChampionJsonLoader.ChampionSeed championSeed : championSeeds) {
-            champions.add(createChampion(championSeed.championId(), championSeed.championName()));
+            Optional<Champion> optionalChampion = championRepository.findByChampionId(championSeed.championId());
+            Champion champion;
+
+            if (optionalChampion.isPresent()) {
+                champion = optionalChampion.get();
+            } else {
+                champion = new Champion();
+                champion.setChampionId(championSeed.championId());
+            }
+
+            champion.setChampionName(championSeed.championName());
+            champions.add(champion);
         }
 
-        // Saves all champions in the database
         championRepository.saveAll(champions);
-    }
-
-    /**
-     * Creates a champion.
-     *
-     * @param championId
-     * @param championName
-     * @return
-     */
-    private Champion createChampion(Integer championId, String championName) {
-        Champion champion = new Champion();
-        champion.setChampionId(championId);
-        champion.setChampionName(championName);
-        return champion;
     }
 
 }

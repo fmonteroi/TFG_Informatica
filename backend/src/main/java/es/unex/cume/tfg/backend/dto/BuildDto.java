@@ -2,6 +2,9 @@ package es.unex.cume.tfg.backend.dto;
 
 import es.unex.cume.tfg.backend.model.Build;
 
+/**
+ * DTO that exposes item and summoner spell choices for a participation.
+ */
 public record BuildDto(
         Integer item0,
         Integer item1,
@@ -14,6 +17,12 @@ public record BuildDto(
         Integer summoner1Id,
         Integer summoner2Id
 ) {
+    /**
+     * Creates a DTO from a Build entity.
+     *
+     * @param build the build entity to convert.
+     * @return the build DTO.
+     */
     public static BuildDto fromEntity(Build build) {
         return new BuildDto(
                 build.getItem0(),

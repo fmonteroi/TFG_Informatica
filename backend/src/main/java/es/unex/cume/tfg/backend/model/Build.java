@@ -2,6 +2,9 @@ package es.unex.cume.tfg.backend.model;
 
 import jakarta.persistence.*;
 
+/**
+ * Entity that stores the item and summoner spell setup used in one participation.
+ */
 @Entity
 public class Build {
 

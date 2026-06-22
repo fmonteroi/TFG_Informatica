@@ -1,6 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.exception.ChampionNotFoundException;
+import es.unex.cume.tfg.backend.exception.ChampionCatalogException;
 import es.unex.cume.tfg.backend.model.Build;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.model.Match;
@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Default implementation of ParticipationService.
+ */
 @Service
 public class ParticipationServiceImpl implements ParticipationService {
 
@@ -79,7 +82,7 @@ public class ParticipationServiceImpl implements ParticipationService {
             // Champion
             Optional<Champion> optionalChampion = championRepository.findById(p.championId());
             if (optionalChampion.isEmpty()) {
-                throw new ChampionNotFoundException(p.championId());
+                throw new ChampionCatalogException(p.championId());
             }
 
             participation.setChampion(optionalChampion.get());

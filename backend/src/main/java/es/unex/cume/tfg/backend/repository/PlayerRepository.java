@@ -2,16 +2,27 @@ package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
 import java.util.Optional;
 
+/**
+ * Repository for Player persistence and PUUID lookups.
+ */
 public interface PlayerRepository extends JpaRepository<Player, String> {
 
+    /**
+     * Finds a player by their Riot PUUID.
+     *
+     * @param puuid the Riot PUUID.
+     * @return the player if it exists.
+     */
     Optional<Player> findByPuuid(String puuid);
 
+    /**
+     * Checks whether a player exists by their Riot PUUID.
+     *
+     * @param puuid the Riot PUUID.
+     * @return true if the player exists.
+     */
     boolean existsByPuuid(String puuid);
 }

@@ -6,6 +6,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity that represents a Riot player known by the application.
+ */
 @Entity
 public class Player {
 

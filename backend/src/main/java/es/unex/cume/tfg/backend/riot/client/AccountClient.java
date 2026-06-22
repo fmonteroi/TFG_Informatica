@@ -9,7 +9,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 
-/*
+/**
  * Client for ACCOUNT-V1 endpoints of Riot API.
  */
 @Component
@@ -25,6 +25,14 @@ public class AccountClient {
         this.riotErrorHandler = riotErrorHandler;
     }
 
+    /**
+     * Fetches Riot account data from a Riot ID.
+     *
+     * @param platform the Riot platform used to infer the routing region.
+     * @param gameName the Riot game name.
+     * @param tagLine the Riot tag line.
+     * @return the Riot account DTO.
+     */
     public AccountDto fetchByRiotId(Platform platform, String gameName, String tagLine) {
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform); // europe.api.riotgames.com
 

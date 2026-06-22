@@ -1,5 +1,8 @@
 import type { ParticipationDto } from '../types/api'
 
+/**
+ * Converts Riot queue IDs into readable queue labels.
+ */
 export function queueLabel(queueId: number) {
     if (queueId === 420) return 'Ranked Solo/Duo'
     if (queueId === 440) return 'Ranked Flex'
@@ -10,6 +13,9 @@ export function queueLabel(queueId: number) {
     return 'Modo especial'
 }
 
+/**
+ * Returns the display order used for League of Legends positions.
+ */
 export function positionOrder(position: string) {
     const order: Record<string, number> = {
         TOP: 1,
@@ -22,6 +28,9 @@ export function positionOrder(position: string) {
     return order[position] ?? 99
 }
 
+/**
+ * Sorts match participants by team, position and player name.
+ */
 export function sortMatchParticipations(participations: ParticipationDto[]) {
     return [...participations].sort((a, b) => {
         return (

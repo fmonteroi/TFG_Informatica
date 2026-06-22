@@ -6,7 +6,15 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
+/**
+ * Repository for Professional persistence and eager player queries.
+ */
 public interface ProfessionalRepository extends JpaRepository<Professional, String> {
+    /**
+     * Finds all professionals with their linked players loaded.
+     *
+     * @return the professionals with player data.
+     */
     @Query("""
         SELECT p
         FROM Professional p

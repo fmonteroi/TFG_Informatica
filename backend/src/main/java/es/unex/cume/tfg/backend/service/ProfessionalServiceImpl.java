@@ -14,6 +14,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Default implementation of ProfessionalService.
+ */
 @Service
 public class ProfessionalServiceImpl implements ProfessionalService {
 
@@ -23,7 +26,7 @@ public class ProfessionalServiceImpl implements ProfessionalService {
     private final RiotFetchService riotFetchService;
     private final MatchService matchService;
 
-    // To prevent multiple professional refresh jobs from running at the same time.
+    // Prevent multiple professional refresh jobs from running at the same time
     private final ReentrantLock professionalsRefreshLock = new ReentrantLock();
 
 

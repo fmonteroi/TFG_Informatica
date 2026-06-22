@@ -11,8 +11,17 @@ import org.springframework.web.client.RestClient;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
+/**
+ * Configures the shared RestClient used to call Riot APIs.
+ */
 @Configuration
 public class RestClientConfig {
+    /**
+     * Creates a RestClient with Riot authentication headers and timeouts.
+     *
+     * @param props Riot API configuration properties.
+     * @return the configured RestClient.
+     */
     @Bean
     public RestClient riotRestClient(ApiProperties props) {
         if (props.key() == null || props.key().isBlank()) {

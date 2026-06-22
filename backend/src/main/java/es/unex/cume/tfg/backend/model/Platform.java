@@ -1,5 +1,8 @@
 package es.unex.cume.tfg.backend.model;
 
+/**
+ * Riot platform routing values supported by the application.
+ */
 public enum Platform {
     BR1,
     EUN1,

@@ -8,7 +8,6 @@ import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.repository.MatchRepository;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -17,6 +16,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Default implementation of MatchService.
+ */
 @Service
 public class MatchServiceImpl implements MatchService {
 
@@ -53,26 +55,13 @@ public class MatchServiceImpl implements MatchService {
      * Finds the details of a match by its ID.
      *
      * @param matchId
-     * @return
+     * @return the match details DTO.
      */
     @Override
     public MatchDetailsDto findMatchDetails(String matchId) {
         Match match = findMatch(matchId);
         List<Participation> participations = participationService.findByMatchId(matchId);
         return MatchDetailsDto.from(match, participations);
-    }
-
-    /**
-     * Finds the match history of a player given their PUUID.
-     * Navigates through Participation to find the matches.
-     *
-     * @param puuid the player's PUUID
-     * @param count the number of matches to return
-     * @return the list of matches
-     */
-    @Override
-    public List<Match> findMatchHistory(String puuid, int count) {
-        return matchRepository.findByParticipantPuuid(puuid, PageRequest.of(0, count));
     }
 
     /**
@@ -186,7 +175,7 @@ public class MatchServiceImpl implements MatchService {
                 participationService.saveParticipationsFromDto(matchDto, savedMatch, platform);
                 savedMatches.add(savedMatch);
             } catch (DataIntegrityViolationException ex) {
-                // Another refresh inserted the same match while this one was processing it.
+                // Another refresh inserted the same match while this one was processing it
             }
         }
         return savedMatches;

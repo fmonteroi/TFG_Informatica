@@ -3,9 +3,9 @@ services:
     image: postgres:16
     container_name: postgres
     environment:
-      POSTGRES_DB: tfg
-      POSTGRES_USER: tfg
-      POSTGRES_PASSWORD: tfg
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -19,12 +19,14 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/tfg
-      SPRING_DATASOURCE_USERNAME: tfg
-      SPRING_DATASOURCE_PASSWORD: tfg
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       RIOT_API_KEY: ${RIOT_API_KEY}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      PORT: ${PORT}
     ports:
-      - "8080:8080"
+      - "${PORT}:${PORT}"
 
 volumes:
   pgdata:

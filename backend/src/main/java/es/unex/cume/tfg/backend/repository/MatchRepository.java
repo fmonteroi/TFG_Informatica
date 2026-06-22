@@ -1,26 +1,27 @@
 package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Match;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository for Match persistence and match lookups.
+ */
 public interface MatchRepository extends JpaRepository<Match, String> {
+    /**
+     * Finds a match by its Riot match ID.
+     *
+     * @param matchId the Riot match ID.
+     * @return the match if it exists.
+     */
     Optional<Match> findByMatchId(String matchId);
 
+    /**
+     * Checks whether a match already exists by its Riot match ID.
+     *
+     * @param matchId the Riot match ID.
+     * @return true if the match exists.
+     */
     boolean existsByMatchId(String matchId);
-
-    @Query("""
-                SELECT DISTINCT m
-                FROM Match m
-                JOIN m.participations p
-                WHERE p.player.puuid = :puuid
-                ORDER BY m.gameStartAt DESC
-            """)
-    List<Match> findByParticipantPuuid(@Param("puuid") String puuid, Pageable pageable);
-
 }

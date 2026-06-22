@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller that exposes champion catalog and build endpoints.
+ */
 @RestController
 @RequestMapping("/api/champions")
 public class ChampionController {
@@ -28,7 +31,7 @@ public class ChampionController {
      * Call: GET /api/champions/{championId}
      *
      * @param championId
-     * @return
+     * @return the champion DTO.
      */
     @GetMapping("/{championId}")
     public ResponseEntity<ChampionDto> findChampion(@PathVariable Integer championId) {
@@ -39,13 +42,11 @@ public class ChampionController {
         return ResponseEntity.ok(ChampionDto.fromEntity(champion));
     }
 
-    /** GET /api/champions - Obtener todos los campeones */
-
     /**
      * Finds all champions.
      * Call: GET /api/champions
      *
-     * @return
+     * @return the champion catalog.
      */
     @GetMapping
     public ResponseEntity<List<ChampionDto>> findAllChampions() {
@@ -65,7 +66,7 @@ public class ChampionController {
      *
      * @param championId
      * @param count
-     * @return
+     * @return the recent professional builds.
      */
     @GetMapping("/{championId}/builds")
     public ResponseEntity<List<ProBuildDto>> getRecentProBuilds(

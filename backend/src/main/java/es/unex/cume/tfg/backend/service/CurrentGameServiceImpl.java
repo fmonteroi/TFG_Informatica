@@ -1,6 +1,8 @@
 package es.unex.cume.tfg.backend.service;
 
 import es.unex.cume.tfg.backend.dto.CurrentGameDto;
+import es.unex.cume.tfg.backend.exception.ChampionCatalogException;
+import es.unex.cume.tfg.backend.exception.ChampionNotFoundException;
 import es.unex.cume.tfg.backend.exception.PlayerNotFoundException;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.model.Player;
@@ -10,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+/**
+ * Default implementation of CurrentGameService.
+ */
 @Service
 public class CurrentGameServiceImpl implements CurrentGameService {
 
@@ -29,7 +34,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
      * Finds the current game info for a player.
      *
      * @param puuid
-     * @return
+     * @return the current game status DTO.
      */
     @Override
     public CurrentGameDto findCurrentGame(String puuid) {
@@ -61,7 +66,13 @@ public class CurrentGameServiceImpl implements CurrentGameService {
         }
 
         // Finds champion info and resolves queue name
-        Champion champion = championService.findChampion(participant.championId());
+        Champion champion;
+        try {
+            champion = championService.findChampion(participant.championId());
+        } catch (ChampionNotFoundException ex) {
+            throw new ChampionCatalogException(participant.championId());
+        }
+
         String queueName = resolveQueueName(currentGame.gameQueueConfigId().intValue());
 
         // Returns current game info in the DTO
@@ -79,7 +90,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
      *
      * @param currentGame
      * @param puuid
-     * @return
+     * @return the matching participant, or null.
      */
     private CurrentGameInfoDto.CurrentGameParticipant findParticipantByPuuid(CurrentGameInfoDto currentGame, String puuid) {
         for (CurrentGameInfoDto.CurrentGameParticipant participant : currentGame.participants()) {
@@ -96,7 +107,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
      * Resolves the queue name from the queue ID.
      *
      * @param queueId
-     * @return
+     * @return the readable queue name.
      */
     private String resolveQueueName(Integer queueId) {
         if (queueId == null) {

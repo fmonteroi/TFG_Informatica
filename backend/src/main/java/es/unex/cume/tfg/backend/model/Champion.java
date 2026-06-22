@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity that represents a League of Legends champion from the local catalog.
+ */
 @Entity
 public class Champion {
     @Id

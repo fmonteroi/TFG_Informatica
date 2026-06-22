@@ -98,6 +98,9 @@ async function loadItemInfoMap() {
     return itemInfoMapPromise
 }
 
+/**
+ * Loads and exposes cached Data Dragon asset maps.
+ */
 export function useDragontailAssets() {
     const [championMap, setChampionMap] = useState<Map<number, string> | null>(null)
     const [summonerSpellMap, setSummonerSpellMap] = useState<Map<number, string> | null>(null)
@@ -123,6 +126,9 @@ export function useDragontailAssets() {
 }
 
 
+/**
+ * Builds a Data Dragon profile icon URL.
+ */
 export function getProfileIconUrl(profileIconId: number) {
     return `${IMG_BASE}/profileicon/${profileIconId}.png`
 }

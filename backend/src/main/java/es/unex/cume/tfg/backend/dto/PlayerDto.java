@@ -5,6 +5,9 @@ import es.unex.cume.tfg.backend.model.Player;
 
 import java.time.Instant;
 
+/**
+ * DTO that exposes player profile data.
+ */
 public record PlayerDto(
         String puuid,
         String gameName,
@@ -15,6 +18,12 @@ public record PlayerDto(
         Instant lastSyncAt
 ) {
 
+    /**
+     * Creates a DTO from a Player entity.
+     *
+     * @param player the player entity to convert.
+     * @return the player DTO.
+     */
     public static PlayerDto fromEntity(Player player) {
         return new PlayerDto(
                 player.getPuuid(),
