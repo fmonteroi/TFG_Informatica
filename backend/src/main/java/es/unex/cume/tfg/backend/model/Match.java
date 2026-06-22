@@ -6,6 +6,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entity that represents a Riot match imported into the local database.
+ */
 @Entity
 public class Match {
     @Id

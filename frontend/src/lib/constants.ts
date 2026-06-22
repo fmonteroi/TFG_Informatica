@@ -1,3 +1,6 @@
+/**
+ * Riot platforms supported by the player search form.
+ */
 export const PLATFORMS = [
     'BR1',
     'EUN1',
@@ -16,4 +19,7 @@ export const PLATFORMS = [
     'VN2',
 ]
 
+/**
+ * Shared card styling used by the main app surfaces.
+ */
 export const CARD_CLASS = 'rounded-2xl border border-slate-800 bg-slate-900 p-4'

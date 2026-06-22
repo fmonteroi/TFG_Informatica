@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller that exposes player search, refresh and current game endpoints.
+ */
 @RestController
 @RequestMapping("/api/players")
 public class PlayerController {
@@ -34,7 +37,7 @@ public class PlayerController {
      * @param platform
      * @param gameName
      * @param tagLine
-     * @return
+     * @return the player and their participations.
      */
     @GetMapping("/search")
     public ResponseEntity<PlayerWithParticipationsDto> searchPlayer(@RequestParam Platform platform, @RequestParam String gameName, @RequestParam String tagLine) {
@@ -54,7 +57,7 @@ public class PlayerController {
      *
      * @param platform
      * @param puuid
-     * @return
+     * @return the refreshed player and their participations.
      */
     @PostMapping("/refresh")
     public ResponseEntity<PlayerWithParticipationsDto> refreshPlayer(@RequestParam Platform platform, @RequestParam String puuid) {

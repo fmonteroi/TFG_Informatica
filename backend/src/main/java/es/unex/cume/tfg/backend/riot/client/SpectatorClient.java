@@ -10,7 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.Optional;
 
-/*
+/**
  * Client for SPECTATOR-V5 endpoints of Riot API.
  */
 @Component
@@ -26,6 +26,13 @@ public class SpectatorClient {
         this.riotErrorHandler = riotErrorHandler;
     }
 
+    /**
+     * Fetches the current active game for a player.
+     *
+     * @param platform the Riot platform.
+     * @param puuid the player PUUID.
+     * @return the current game if Riot reports one.
+     */
     public Optional<CurrentGameInfoDto> fetchCurrentGameByPuuid(Platform platform, String puuid) {
         String baseUrl = baseUrlBuilder.buildPlatformBaseUrl(platform); // euw1.api.riotgames.com
 

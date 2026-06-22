@@ -7,9 +7,19 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Converts Riot HTTP error responses into RiotApiException instances.
+ */
 @Component
 public class RiotErrorHandler {
 
+    /**
+     * Reads the Riot error response and raises a domain-specific exception.
+     *
+     * @param request the outgoing request.
+     * @param response the Riot error response.
+     * @throws IOException if the response body cannot be read.
+     */
     public void handleError(HttpRequest request, ClientHttpResponse response) throws IOException {
         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
         String message = "%s %s -> %s. Body: %s".formatted(

@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 
+/**
+ * Entity that represents one player's participation in a match.
+ */
 @Entity
 public class Participation {
 

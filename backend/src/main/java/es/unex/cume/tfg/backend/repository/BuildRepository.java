@@ -9,10 +9,27 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository for Build persistence and pro build queries.
+ */
 public interface BuildRepository extends JpaRepository<Build, Long> {
 
+    /**
+     * Finds the build associated with a participation.
+     *
+     * @param participationId the participation ID.
+     * @return the build if it exists.
+     */
     Optional<Build> findByParticipationId(Long participationId);
 
+    /**
+     * Finds recent professional builds for a champion in the given queues.
+     *
+     * @param championId the champion ID.
+     * @param queueIds the queue IDs to include.
+     * @param pageable pagination and limit information.
+     * @return the recent professional builds.
+     */
     @Query("""
         SELECT b
         FROM Build b

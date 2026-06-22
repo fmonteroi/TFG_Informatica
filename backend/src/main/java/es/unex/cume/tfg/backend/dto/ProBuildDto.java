@@ -9,6 +9,9 @@ import es.unex.cume.tfg.backend.model.Professional;
 
 import java.time.Instant;
 
+/**
+ * DTO that exposes a professional player's recent build for a champion.
+ */
 public record ProBuildDto(
         Long buildId,
         String matchId,
@@ -25,6 +28,12 @@ public record ProBuildDto(
         String teamPosition,
         BuildDto build
 ) {
+    /**
+     * Creates a DTO from a Build entity linked to a professional player.
+     *
+     * @param build the build entity to convert.
+     * @return the professional build DTO.
+     */
     public static ProBuildDto fromEntity(Build build) {
         Participation participation = build.getParticipation();
         Match match = participation.getMatch();

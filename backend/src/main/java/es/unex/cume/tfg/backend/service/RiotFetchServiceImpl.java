@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Default implementation of RiotFetchService.
+ */
 @Service
 public class RiotFetchServiceImpl implements RiotFetchService {
 
@@ -150,7 +153,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
      *
      * @param platform
      * @param puuid
-     * @return
+     * @return the current game when Riot reports one.
      */
     @Override
     public Optional<CurrentGameInfoDto> fetchCurrentGame(Platform platform, String puuid) {

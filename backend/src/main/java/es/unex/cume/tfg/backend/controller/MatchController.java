@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller that exposes match detail endpoints.
+ */
 @RestController
 @RequestMapping("/api/matches")
 public class MatchController {
@@ -25,7 +28,7 @@ public class MatchController {
      * Call: GET /api/matches/{matchId}
      *
      * @param matchId
-     * @return
+     * @return the match details.
      */
     @GetMapping("/{matchId}")
     public ResponseEntity<MatchDetailsDto> findMatchDetails(@PathVariable String matchId) {

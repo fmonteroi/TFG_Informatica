@@ -7,6 +7,9 @@ import es.unex.cume.tfg.backend.model.Player;
 
 import java.time.Instant;
 
+/**
+ * DTO that exposes a player's participation in a match.
+ */
 public record ParticipationDto(
         Long id,
         String matchId,
@@ -25,6 +28,12 @@ public record ParticipationDto(
         String teamPosition,
         BuildDto build
 ) {
+    /**
+     * Creates a DTO from a Participation entity.
+     *
+     * @param participation the participation entity to convert.
+     * @return the participation DTO.
+     */
     public static ParticipationDto fromEntity(Participation participation) {
         Player player = participation.getPlayer();
         Champion champion = participation.getChampion();

@@ -30,7 +30,7 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
      *
      * @param participant
      * @param platform
-     * @return
+     * @return the synchronized player.
      */
     @Override
     public Player syncBasicPlayer(MatchDto.Participant participant, Platform platform) {
@@ -52,7 +52,7 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
         try {
             return playerRepository.save(player);
         } catch (DataIntegrityViolationException ex) {
-            // Another process inserted the same player while this one was trying to save it.
+            // Another process inserted the same player while this one was trying to save it
             Optional<Player> existingPlayer = playerRepository.findByPuuid(participant.puuid());
 
             if (existingPlayer.isPresent()) {

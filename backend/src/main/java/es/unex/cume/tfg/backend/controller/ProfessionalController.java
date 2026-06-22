@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * REST controller that exposes professional player maintenance endpoints.
+ */
 @RestController
 @RequestMapping("/api/professionals")
 public class ProfessionalController {
@@ -21,7 +24,7 @@ public class ProfessionalController {
      * Refreshes all professionals data.
      * Call: POST /api/professionals/refresh
      *
-     * @return
+     * @return the refresh result summary.
      */
     @PostMapping("/refresh")
     public ResponseEntity<ProfessionalsRefreshResultDto> refreshProfessionals() {

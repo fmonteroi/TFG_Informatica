@@ -6,12 +6,34 @@ import es.unex.cume.tfg.backend.model.Build;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Service that manages build persistence and professional build queries.
+ */
 public interface BuildService {
 
+    /**
+     * Finds a build by participation ID.
+     *
+     * @param participationId the participation ID.
+     * @return the build if it exists.
+     */
     Optional<Build> findByParticipationId(Long participationId);
 
+    /**
+     * Saves a build.
+     *
+     * @param build the build to save.
+     * @return the saved build.
+     */
     Build saveBuild(Build build);
 
+    /**
+     * Finds recent professional builds for a champion.
+     *
+     * @param championId the champion ID.
+     * @param limit the maximum number of builds to return.
+     * @return the recent professional builds.
+     */
     List<ProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit);
 }
 

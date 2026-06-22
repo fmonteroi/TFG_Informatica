@@ -14,6 +14,9 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Default implementation of PlayerService.
+ */
 @Service
 public class PlayerServiceImpl implements PlayerService {
 
@@ -35,7 +38,7 @@ public class PlayerServiceImpl implements PlayerService {
      * Finds a player by their PUUID.
      *
      * @param puuid
-     * @return
+     * @return the player if it exists.
      */
     @Override
     public Optional<Player> findByPuuid(String puuid) {
@@ -46,7 +49,7 @@ public class PlayerServiceImpl implements PlayerService {
      * Finds if a player already exists in the database by their PUUID.
      *
      * @param puuid
-     * @return
+     * @return true if the player exists.
      */
     @Override
     public boolean existsByPuuid(String puuid) {
@@ -60,7 +63,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param platform
      * @param gameName
      * @param tagLine
-     * @return
+     * @return the existing or newly created player.
      */
     @Transactional
     @Override
@@ -130,7 +133,7 @@ public class PlayerServiceImpl implements PlayerService {
             player.setProfileIconId(summonerDto.profileIconId());
             player.setSummonerLevel(summonerDto.summonerLevel());
 
-            // If was never synced, load matches since last year, otherwise since lastSync.
+            // If was never synced, load matches since last year, otherwise since lastSync
             if (lastSyncAt == null) {
                 Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
                 matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
@@ -160,7 +163,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param gameName
      * @param tagLine
      * @param puuid
-     * @return
+     * @return the synchronized player.
      */
     @Override
     public Player syncPlayerForProfessional(Platform platform, String gameName, String tagLine, String puuid) {
@@ -191,7 +194,7 @@ public class PlayerServiceImpl implements PlayerService {
         newPlayer.setProfileIconId(summonerDto.profileIconId());
         newPlayer.setSummonerLevel(summonerDto.summonerLevel());
 
-        // Note: It doesn't update lastSyncAt because it doesn't load matches here.
+        // Note: It doesn't update lastSyncAt because it doesn't load matches here
         return playerRepository.save(newPlayer);
     }
 
@@ -201,7 +204,7 @@ public class PlayerServiceImpl implements PlayerService {
      * @param platform
      * @param gameName
      * @param tagLine
-     * @return
+     * @return the created player.
      */
     private Player savePlayer(String puuid, Platform platform, String gameName, String tagLine) {
         // Creates new player with basic data
@@ -235,7 +238,7 @@ public class PlayerServiceImpl implements PlayerService {
      *
      * @param player
      * @param platform
-     * @return
+     * @return the initialized player.
      */
     private Player initExistingPlayer(Player player, Platform platform) {
         // Fetches summoner data (icon + level)
@@ -257,7 +260,7 @@ public class PlayerServiceImpl implements PlayerService {
      * Gets the lock for a player to prevent concurrent refreshes. If the lock doesn't exist, creates it.
      *
      * @param puuid
-     * @return
+     * @return the lock for the player.
      */
     private ReentrantLock getPlayerLock(String puuid) {
         return refreshLocks.computeIfAbsent(puuid, key -> new ReentrantLock());

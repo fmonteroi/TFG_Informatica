@@ -11,7 +11,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
-/*
+/**
  * Client for MATCH-V5 endpoints of Riot API.
  */
 @Component
@@ -27,6 +27,16 @@ public class MatchClient {
         this.riotErrorHandler = riotErrorHandler;
     }
 
+    /**
+     * Fetches match IDs for a player since an optional start time.
+     *
+     * @param platform the Riot platform used to infer the routing region.
+     * @param puuid the player PUUID.
+     * @param count the number of match IDs to fetch.
+     * @param start the pagination offset.
+     * @param startTime the epoch seconds lower bound, or null.
+     * @return the fetched match IDs.
+     */
     public List<String> getMatchIdsByPuuidSince(Platform platform, String puuid, int count, int start, Long startTime) {
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform); // europe.api.riotgames.com
 
@@ -53,6 +63,13 @@ public class MatchClient {
                 });
     }
 
+    /**
+     * Fetches the full Riot match payload by match ID.
+     *
+     * @param platform the Riot platform used to infer the routing region.
+     * @param matchId the Riot match ID.
+     * @return the Riot match DTO.
+     */
     public MatchDto getMatchByMatchId(Platform platform, String matchId) {
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform);
 

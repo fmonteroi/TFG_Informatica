@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Loads champion seed data from the bundled champion JSON file.
+ */
 @Component
 public class ChampionJsonLoader {
 
@@ -19,6 +22,11 @@ public class ChampionJsonLoader {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Reads champion seeds from the classpath JSON resource.
+     *
+     * @return the champion seeds.
+     */
     public List<ChampionSeed> loadChampionSeeds() {
         try (InputStream inputStream = new ClassPathResource("static/champion.json").getInputStream()) {
             ChampionJsonFile championJsonFile = objectMapper.readValue(inputStream, ChampionJsonFile.class);
@@ -41,15 +49,24 @@ public class ChampionJsonLoader {
         }
     }
 
+    /**
+     * Seed data used to synchronize the local champion catalog.
+     */
     public record ChampionSeed(
             Integer championId,
             String championName
     ) {
     }
 
+    /**
+     * Root structure of the champion JSON file.
+     */
     private record ChampionJsonFile(Map<String, ChampionJsonData> data) {
     }
 
+    /**
+     * Champion entry structure in the champion JSON file.
+     */
     private record ChampionJsonData(String key, String name) {
     }
 }

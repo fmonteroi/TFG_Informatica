@@ -1,8 +1,8 @@
 // This file contains the TypeScript types that represent
-// the DTOs returned by Spring Boot backend.
+// the DTOs returned by Spring Boot backend
 //
 // IMPORTANT:
-// In Java there are types like Instant, Integer, Long, boolean...
+// In Java there are types like Instant, Integer, Long, boolean
 // In JSON, when they arrive at the frontend, they are usually converted like this:
 // - Instant -> string
 // - enum -> string
