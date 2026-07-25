@@ -28,7 +28,7 @@ function Player() {
         )
     }
 
-    const { championMap, summonerSpellMap, itemInfoMap } = useDragontailAssets()
+    const { dataDragonVersion, championMap, summonerSpellMap, itemInfoMap } = useDragontailAssets()
 
 
     const [playerData, setPlayerData] = useState<PlayerDetailsDto | null>(null)
@@ -217,6 +217,7 @@ function Player() {
                 <>
                     <PlayerHeader
                         player={playerData.player}
+                        dataDragonVersion={dataDragonVersion}
                         refreshing={refreshingPlayer}
                         onRefresh={handleRefreshPlayer}
                     />

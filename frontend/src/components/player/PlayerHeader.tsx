@@ -4,19 +4,28 @@ import type { PlayerDto } from '../../types/api'
 
 type PlayerHeaderProps = {
     player: PlayerDto
+    dataDragonVersion: string | null
     refreshing: boolean
     onRefresh: () => void
 }
 
-function PlayerHeader({ player, refreshing, onRefresh }: PlayerHeaderProps) {
+function PlayerHeader({ player, dataDragonVersion, refreshing, onRefresh }: PlayerHeaderProps) {
     return (
         <section className="flex flex-col gap-4 border-b border-slate-800 pb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-                <img
-                    src={getProfileIconUrl(player.profileIconId)}
-                    alt={`Icono de perfil de ${player.gameName}`}
-                    className="h-20 w-20 rounded-lg border border-slate-700"
-                />
+                {dataDragonVersion ? (
+                    <img
+                        src={getProfileIconUrl(player.profileIconId, dataDragonVersion)}
+                        alt={`Icono de perfil de ${player.gameName}`}
+                        className="h-20 w-20 rounded-lg border border-slate-700"
+                    />
+                ) : (
+                    <div
+                        role="img"
+                        aria-label="Icono de perfil cargando"
+                        className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
+                    />
+                )}
 
                 <div>
                     <h1 className="text-3xl font-black">

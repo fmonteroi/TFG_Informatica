@@ -13,7 +13,8 @@ import { CARD_CLASS } from '../lib/constants'
 
 function ProfessionalProfile() {
     const { puuid = '' } = useParams()
-    const { championMap, summonerSpellMap, itemInfoMap } = useDragontailAssets()
+    const { dataDragonVersion, championMap, summonerSpellMap, itemInfoMap } =
+        useDragontailAssets()
     const [professional, setProfessional] = useState<ProfessionalDetailsDto | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -67,11 +68,22 @@ function ProfessionalProfile() {
             <header className="border-b border-slate-800 pb-6">
                 <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-4">
-                        <img
-                            src={getProfileIconUrl(professional.profileIconId)}
-                            alt={`Icono de perfil de ${professional.proName}`}
-                            className="h-20 w-20 rounded-lg border border-slate-700"
-                        />
+                        {dataDragonVersion ? (
+                            <img
+                                src={getProfileIconUrl(
+                                    professional.profileIconId,
+                                    dataDragonVersion,
+                                )}
+                                alt={`Icono de perfil de ${professional.proName}`}
+                                className="h-20 w-20 rounded-lg border border-slate-700"
+                            />
+                        ) : (
+                            <div
+                                role="img"
+                                aria-label="Icono de perfil cargando"
+                                className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
+                            />
+                        )}
                         <div>
                             <p className="text-xs font-semibold uppercase text-cyan-300">
                                 Perfil profesional

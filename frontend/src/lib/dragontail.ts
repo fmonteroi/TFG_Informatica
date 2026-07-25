@@ -26,12 +26,10 @@ export type ItemInfo = {
     imageUrl: string
 }
 
-const DRAGONTAIL_VERSION = '16.6.1'
-const DRAGONTAIL_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}`
-const EN_DATA_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}/data/en_US`
-const ES_DATA_BASE = `https://ddragon.leagueoflegends.com/cdn/${DRAGONTAIL_VERSION}/data/es_ES`
-const IMG_BASE = `${DRAGONTAIL_BASE}/img`
+const DRAGONTAIL_HOST = 'https://ddragon.leagueoflegends.com'
+const VERSIONS_URL = `${DRAGONTAIL_HOST}/api/versions.json`
 
+let versionPromise: Promise<string> | null = null
 let championMapPromise: Promise<Map<number, string>> | null = null
 let summonerSpellMapPromise: Promise<Map<number, string>> | null = null
 let itemInfoMapPromise: Promise<Map<number, ItemInfo>> | null = null
@@ -45,13 +43,46 @@ async function fetchStaticJson<T>(url: string): Promise<T> {
     return response.json() as Promise<T>
 }
 
+async function loadDataDragonVersion() {
+    if (!versionPromise) {
+        versionPromise = fetchStaticJson<string[]>(VERSIONS_URL).then((versions) => {
+            const latestVersion = versions[0]
+
+            if (!latestVersion) {
+                throw new Error('Data Dragon no devolvió ninguna versión')
+            }
+
+            return latestVersion
+        })
+    }
+
+    return versionPromise
+}
+
+function dataDragonBases(version: string) {
+    const base = `${DRAGONTAIL_HOST}/cdn/${version}`
+
+    return {
+        englishData: `${base}/data/en_US`,
+        spanishData: `${base}/data/es_ES`,
+        images: `${base}/img`,
+    }
+}
+
 async function loadChampionMap() {
     if (!championMapPromise) {
-        championMapPromise = fetchStaticJson<ChampionStaticFile>(`${EN_DATA_BASE}/champion.json`).then((file) => {
+        championMapPromise = loadDataDragonVersion().then(async (version) => {
+            const bases = dataDragonBases(version)
+            const file = await fetchStaticJson<ChampionStaticFile>(
+                `${bases.englishData}/champion.json`,
+            )
             const map = new Map<number, string>()
 
             Object.values(file.data).forEach((champion) => {
-                map.set(Number(champion.key), `${IMG_BASE}/champion/${champion.image.full}`)
+                map.set(
+                    Number(champion.key),
+                    `${bases.images}/champion/${champion.image.full}`,
+                )
             })
 
             return map
@@ -63,11 +94,15 @@ async function loadChampionMap() {
 
 async function loadSummonerSpellMap() {
     if (!summonerSpellMapPromise) {
-        summonerSpellMapPromise = fetchStaticJson<SummonerStaticFile>(`${EN_DATA_BASE}/summoner.json`).then((file) => {
+        summonerSpellMapPromise = loadDataDragonVersion().then(async (version) => {
+            const bases = dataDragonBases(version)
+            const file = await fetchStaticJson<SummonerStaticFile>(
+                `${bases.englishData}/summoner.json`,
+            )
             const map = new Map<number, string>()
 
             Object.values(file.data).forEach((spell) => {
-                map.set(Number(spell.key), `${IMG_BASE}/spell/${spell.image.full}`)
+                map.set(Number(spell.key), `${bases.images}/spell/${spell.image.full}`)
             })
 
             return map
@@ -79,7 +114,11 @@ async function loadSummonerSpellMap() {
 
 async function loadItemInfoMap() {
     if (!itemInfoMapPromise) {
-        itemInfoMapPromise = fetchStaticJson<ItemStaticFile>(`${ES_DATA_BASE}/item.json`).then((file) => {
+        itemInfoMapPromise = loadDataDragonVersion().then(async (version) => {
+            const bases = dataDragonBases(version)
+            const file = await fetchStaticJson<ItemStaticFile>(
+                `${bases.spanishData}/item.json`,
+            )
             const map = new Map<number, ItemInfo>()
 
             Object.entries(file.data).forEach(([itemId, item]) => {
@@ -87,7 +126,7 @@ async function loadItemInfoMap() {
                     id: Number(itemId),
                     name: item.name,
                     description: item.description,
-                    imageUrl: `${IMG_BASE}/item/${item.image.full}`,
+                    imageUrl: `${bases.images}/item/${item.image.full}`,
                 })
             })
 
@@ -102,33 +141,45 @@ async function loadItemInfoMap() {
  * Loads and exposes cached Data Dragon asset maps.
  */
 export function useDragontailAssets() {
+    const [dataDragonVersion, setDataDragonVersion] = useState<string | null>(null)
     const [championMap, setChampionMap] = useState<Map<number, string> | null>(null)
     const [summonerSpellMap, setSummonerSpellMap] = useState<Map<number, string> | null>(null)
     const [itemInfoMap, setItemInfoMap] = useState<Map<number, ItemInfo> | null>(null)
 
     useEffect(() => {
-        async function load() {
-            const [loadedChampionMap, loadedSpellMap, loadedItemInfoMap] = await Promise.all([
-                loadChampionMap(),
-                loadSummonerSpellMap(),
-                loadItemInfoMap(),
-            ])
+        let cancelled = false
 
-            setChampionMap(loadedChampionMap)
-            setSummonerSpellMap(loadedSpellMap)
-            setItemInfoMap(loadedItemInfoMap)
+        async function load() {
+            const [loadedVersion, loadedChampionMap, loadedSpellMap, loadedItemInfoMap] =
+                await Promise.all([
+                    loadDataDragonVersion(),
+                    loadChampionMap(),
+                    loadSummonerSpellMap(),
+                    loadItemInfoMap(),
+                ])
+
+            if (!cancelled) {
+                setDataDragonVersion(loadedVersion)
+                setChampionMap(loadedChampionMap)
+                setSummonerSpellMap(loadedSpellMap)
+                setItemInfoMap(loadedItemInfoMap)
+            }
         }
 
         void load()
+
+        return () => {
+            cancelled = true
+        }
     }, [])
 
-    return { championMap, summonerSpellMap, itemInfoMap }
+    return { dataDragonVersion, championMap, summonerSpellMap, itemInfoMap }
 }
 
 
 /**
  * Builds a Data Dragon profile icon URL.
  */
-export function getProfileIconUrl(profileIconId: number) {
-    return `${IMG_BASE}/profileicon/${profileIconId}.png`
+export function getProfileIconUrl(profileIconId: number, version: string) {
+    return `${dataDragonBases(version).images}/profileicon/${profileIconId}.png`
 }
