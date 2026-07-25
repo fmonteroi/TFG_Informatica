@@ -19,21 +19,8 @@ function PlayerStatsCard({ stats, championMap }: PlayerStatsCardProps) {
                 <p className="mt-3 text-sm text-slate-400">Todavía no hay datos calculados.</p>
             ) : (
                 <div className="mt-4 space-y-4">
-                    <StatGrid
-                        items={[
-                            { label: 'Partidas', value: stats.gamesPlayed },
-                            { label: 'Win rate', value: `${stats.winRate.toFixed(1)}%`, tone: 'accent' },
-                            { label: 'Victorias', value: stats.wins, tone: 'positive' },
-                            { label: 'Derrotas', value: stats.losses, tone: 'negative' },
-                            { label: 'KDA', value: stats.kda.toFixed(2) },
-                            { label: 'Kills', value: stats.averageKills.toFixed(1) },
-                            { label: 'Deaths', value: stats.averageDeaths.toFixed(1) },
-                            { label: 'Assists', value: stats.averageAssists.toFixed(1) },
-                        ]}
-                    />
-
                     {stats.bestChampion && (
-                        <div className="flex items-center gap-3 border-t border-slate-800 pt-4">
+                        <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
                             {bestChampionIcon ? (
                                 <img
                                     src={bestChampionIcon}
@@ -53,6 +40,19 @@ function PlayerStatsCard({ stats, championMap }: PlayerStatsCardProps) {
                             </div>
                         </div>
                     )}
+
+                    <StatGrid
+                        items={[
+                            { label: 'Partidas', value: stats.gamesPlayed },
+                            { label: 'Win rate', value: `${stats.winRate.toFixed(1)}%`, tone: 'accent' },
+                            { label: 'Victorias', value: stats.wins, tone: 'positive' },
+                            { label: 'Derrotas', value: stats.losses, tone: 'negative' },
+                            { label: 'KDA', value: stats.kda.toFixed(2) },
+                            { label: 'Kills', value: stats.averageKills.toFixed(1) },
+                            { label: 'Deaths', value: stats.averageDeaths.toFixed(1) },
+                            { label: 'Assists', value: stats.averageAssists.toFixed(1) },
+                        ]}
+                    />
                 </div>
             )}
         </section>

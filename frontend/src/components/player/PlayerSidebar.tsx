@@ -29,15 +29,15 @@ function PlayerSidebar({
 
     return (
         <aside className="space-y-4">
-            <RankCard title="Solo / Duo" rank={soloRank} />
-            <RankCard title="Flex" rank={flexRank} />
-            <PlayerStatsCard stats={stats} championMap={championMap} />
             <CurrentGameStatusCard
                 currentGame={currentGame}
                 loading={loadingCurrentGame}
                 error={currentGameError}
                 championMap={championMap}
             />
+            <RankCard title="Solo / Duo" rank={soloRank} />
+            <RankCard title="Flex" rank={flexRank} />
+            <PlayerStatsCard stats={stats} championMap={championMap} />
         </aside>
     )
 }

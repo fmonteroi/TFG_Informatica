@@ -25,13 +25,7 @@ function ChampionHeader({ champion, championIcon, onBack }: ChampionHeaderProps)
                 )}
 
                 <div>
-                    <p className="text-xs font-semibold uppercase text-cyan-300">
-                        Detalle de campeón
-                    </p>
-                    <h1 className="mt-1 text-3xl font-black">{champion.championName}</h1>
-                    <p className="mt-1 text-slate-400">
-                        Estadísticas, recomendación y actividad profesional reciente.
-                    </p>
+                    <h1 className="text-3xl font-black">{champion.championName}</h1>
                 </div>
             </div>
 

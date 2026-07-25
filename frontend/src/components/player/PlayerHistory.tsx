@@ -14,6 +14,7 @@ type PlayerHistoryProps = {
     summonerSpellMap: Map<number, string> | null
     itemInfoMap: Map<number, ItemInfo> | null
     playerPuuid: string
+    playerPlatform: string
     onToggleParticipation: (participation: ParticipationDto) => void
 }
 
@@ -26,6 +27,7 @@ function PlayerHistory({
                            summonerSpellMap,
                            itemInfoMap,
                            playerPuuid,
+                           playerPlatform,
                            onToggleParticipation,
                        }: PlayerHistoryProps) {
     return (
@@ -107,6 +109,7 @@ function PlayerHistory({
                                 <MatchScoreboard
                                     match={expandedMatch}
                                     playerPuuid={playerPuuid}
+                                    playerPlatform={playerPlatform}
                                     championMap={championMap}
                                     spellMap={summonerSpellMap}
                                     itemInfoMap={itemInfoMap}

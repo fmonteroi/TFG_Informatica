@@ -240,6 +240,7 @@ function Player() {
                             summonerSpellMap={summonerSpellMap}
                             itemInfoMap={itemInfoMap}
                             playerPuuid={playerData.player.puuid}
+                            playerPlatform={playerData.player.platform}
                             onToggleParticipation={handleToggleParticipation}
                         />
                     </div>

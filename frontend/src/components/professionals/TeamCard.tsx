@@ -26,7 +26,7 @@ function TeamCard({ teamName, professionals }: TeamCardProps) {
                     <li key={professional.puuid}>
                         <Link
                             to={`/profesionales/${encodeURIComponent(professional.puuid)}`}
-                            className="flex items-center justify-between gap-3 rounded-md px-3 py-1.5 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-cyan-300"
+                            className="flex items-center justify-between gap-3 rounded-md px-3 py-1 transition hover:bg-slate-800 focus-visible:outline-2 focus-visible:outline-cyan-300"
                         >
                             <span className="truncate font-semibold">{professional.proName}</span>
                             <span className="text-xs text-slate-400">

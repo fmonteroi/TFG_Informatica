@@ -1,10 +1,12 @@
 import type {ItemInfo} from '../lib/dragontail'
 import ItemTooltip from './ItemTooltip'
 import type {MatchDetailsDto} from '../types/api'
+import { Link } from 'react-router-dom'
 
 type MatchScoreboardProps = {
     match: MatchDetailsDto
     playerPuuid: string
+    playerPlatform: string
     championMap: Map<number, string> | null
     spellMap: Map<number, string> | null
     queueLabel: (queueId: number) => string
@@ -28,6 +30,7 @@ function teamSectionClass(teamId: number) {
 function MatchScoreboard({
                              match,
                              playerPuuid,
+                             playerPlatform,
                              championMap,
                              spellMap,
                              queueLabel,
@@ -114,9 +117,18 @@ function MatchScoreboard({
                                             )}
 
                                             <div className="min-w-0">
-                                                <p className="truncate font-bold text-slate-100">
-                                                    {participation.gameName}#{participation.tagLine}
-                                                </p>
+                                                {participation.gameName && participation.tagLine ? (
+                                                    <Link
+                                                        to={`/jugador/${encodeURIComponent(playerPlatform)}/${encodeURIComponent(participation.gameName)}/${encodeURIComponent(participation.tagLine)}`}
+                                                        className="block truncate font-bold text-slate-100 transition hover:text-cyan-300 hover:underline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                                                    >
+                                                        {participation.gameName}#{participation.tagLine}
+                                                    </Link>
+                                                ) : (
+                                                    <p className="truncate font-bold text-slate-400">
+                                                        Jugador desconocido
+                                                    </p>
+                                                )}
 
                                                 <p className="truncate text-sm text-slate-300">
                                                     {participation.championName} · {participation.teamPosition || 'Sin rol'}
