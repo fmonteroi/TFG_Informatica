@@ -19,6 +19,15 @@ public class Champion {
     @OneToMany(mappedBy = "champion")
     private List<Participation> participations = new ArrayList<>();
 
+    @OneToOne(mappedBy = "champion", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ChampionStats stats;
+
+    @OneToMany(mappedBy = "bestChampion")
+    private List<PlayerStats> bestForPlayers = new ArrayList<>();
+
+    @OneToOne(mappedBy = "champion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private RecommendedBuild recommendedBuild;
+
     public Champion() {
     }
 
@@ -44,5 +53,29 @@ public class Champion {
 
     public void setParticipations(List<Participation> participations) {
         this.participations = participations;
+    }
+
+    public ChampionStats getStats() {
+        return stats;
+    }
+
+    public void setStats(ChampionStats stats) {
+        this.stats = stats;
+    }
+
+    public List<PlayerStats> getBestForPlayers() {
+        return bestForPlayers;
+    }
+
+    public void setBestForPlayers(List<PlayerStats> bestForPlayers) {
+        this.bestForPlayers = bestForPlayers;
+    }
+
+    public RecommendedBuild getRecommendedBuild() {
+        return recommendedBuild;
+    }
+
+    public void setRecommendedBuild(RecommendedBuild recommendedBuild) {
+        this.recommendedBuild = recommendedBuild;
     }
 }

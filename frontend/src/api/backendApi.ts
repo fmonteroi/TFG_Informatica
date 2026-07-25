@@ -1,10 +1,11 @@
 import type {
+    ChampionDetailsDto,
     ChampionDto,
     CurrentGameDto,
     MatchDetailsDto,
-    ProfessionalsRefreshResultDto,
-    PlayerWithParticipationsDto,
-    ProBuildDto,
+    PlayerDetailsDto,
+    ProfessionalDetailsDto,
+    ProfessionalDto,
 } from '../types/api'
 
 type BackendErrorBody = {
@@ -36,9 +37,6 @@ export class ApiError extends Error {
     }
 }
 
-/**
- * Sends a request to the backend and preserves structured API errors.
- */
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
     const response = await fetch(`${BASE_URL}${path}`, options)
 
@@ -62,62 +60,45 @@ async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
     return response.json() as Promise<T>
 }
 
-/**
- * Searches a player by Riot ID.
- */
 export async function searchPlayer(platform: string, gameName: string, tagLine: string) {
     const params = new URLSearchParams({ platform, gameName, tagLine })
-    return apiRequest<PlayerWithParticipationsDto>(`/api/players/search?${params.toString()}`)
+    return apiRequest<PlayerDetailsDto>(`/api/players/search?${params.toString()}`)
 }
 
-/**
- * Refreshes an existing player's profile and match history.
- */
 export async function refreshPlayer(platform: string, puuid: string) {
     const params = new URLSearchParams({ platform, puuid })
-    return apiRequest<PlayerWithParticipationsDto>(`/api/players/refresh?${params.toString()}`, { method: 'POST' })
+    return apiRequest<PlayerDetailsDto>(`/api/players/refresh?${params.toString()}`, {
+        method: 'POST',
+    })
 }
 
-/**
- * Fetches the current game status for a player.
- */
 export async function getCurrentGame(puuid: string) {
     const params = new URLSearchParams({ puuid })
     return apiRequest<CurrentGameDto>(`/api/players/current-game?${params.toString()}`)
 }
 
-/**
- * Refreshes professional players and their recent matches.
- */
-export async function refreshProfessionals() {
-    return apiRequest<ProfessionalsRefreshResultDto>('/api/professionals/refresh', { method: 'POST' })
-}
-
-/**
- * Fetches match details by match ID.
- */
 export async function getMatchById(matchId: string) {
-    return apiRequest<MatchDetailsDto>(`/api/matches/${matchId}`)
+    return apiRequest<MatchDetailsDto>(`/api/matches/${encodeURIComponent(matchId)}`)
 }
 
-/**
- * Fetches a champion by ID.
- */
-export async function getChampionById(championId: string) {
-    return apiRequest<ChampionDto>(`/api/champions/${championId}`)
-}
-
-/**
- * Fetches all champions from the backend catalog.
- */
 export async function getAllChampions() {
     return apiRequest<ChampionDto[]>('/api/champions')
 }
 
-/**
- * Fetches recent professional builds for a champion.
- */
-export async function getChampionBuilds(championId: string, count: number) {
-    const params = new URLSearchParams({ count: String(count) })
-    return apiRequest<ProBuildDto[]>(`/api/champions/${championId}/builds?${params.toString()}`)
+export async function getChampionById(championId: string, buildCount = 10) {
+    const params = new URLSearchParams({ buildCount: String(buildCount) })
+    return apiRequest<ChampionDetailsDto>(
+        `/api/champions/${encodeURIComponent(championId)}?${params.toString()}`,
+    )
+}
+
+export async function getAllProfessionals() {
+    return apiRequest<ProfessionalDto[]>('/api/professionals')
+}
+
+export async function getProfessionalByPuuid(puuid: string, buildCount = 20) {
+    const params = new URLSearchParams({ buildCount: String(buildCount) })
+    return apiRequest<ProfessionalDetailsDto>(
+        `/api/professionals/${encodeURIComponent(puuid)}?${params.toString()}`,
+    )
 }

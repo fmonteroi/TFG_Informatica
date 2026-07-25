@@ -1,31 +1,5 @@
-// This file contains the TypeScript types that represent
-// the DTOs returned by Spring Boot backend
-//
-// IMPORTANT:
-// In Java there are types like Instant, Integer, Long, boolean
-// In JSON, when they arrive at the frontend, they are usually converted like this:
-// - Instant -> string
-// - enum -> string
-// - Integer / Long -> number
-// - boolean -> boolean
-// - String -> string
+// TypeScript representations of the DTOs returned by the Spring Boot API.
 
-
-// --------------------------------------------------
-// Result of refreshing professionals DTO
-// ProfessionalsRefreshResultDto in backend
-// --------------------------------------------------
-export interface ProfessionalsRefreshResultDto {
-    totalProfessionals: number
-    checkedProfessionals: number
-    stoppedByRateLimit: boolean
-    message: string
-}
-
-// --------------------------------------------------
-// Build DTO
-// BuildDto in backend
-// --------------------------------------------------
 export interface BuildDto {
     item0: number | null
     item1: number | null
@@ -39,19 +13,27 @@ export interface BuildDto {
     summoner2Id: number | null
 }
 
-// --------------------------------------------------
-// Champion DTO
-// ChampionDto in backend
-// --------------------------------------------------
 export interface ChampionDto {
     championId: number
     championName: string
 }
 
-// --------------------------------------------------
-// Player DTO
-// PlayerDto in backend
-// --------------------------------------------------
+export interface ChampionStatsDto {
+    championId: number
+    gamesPlayed: number
+    wins: number
+    losses: number
+    winRate: number
+    averageKills: number
+    averageDeaths: number
+    averageAssists: number
+    kda: number
+}
+
+export interface RecommendedBuildDto extends BuildDto {
+    championId: number
+}
+
 export interface PlayerDto {
     puuid: string
     gameName: string
@@ -59,13 +41,30 @@ export interface PlayerDto {
     platform: string
     profileIconId: number
     summonerLevel: number
-    lastSyncAt: string
+    lastSyncAt: string | null
 }
 
-// --------------------------------------------------
-// Participation DTO
-// ParticipationDto in backend
-// --------------------------------------------------
+export interface PlayerStatsDto {
+    gamesPlayed: number
+    wins: number
+    losses: number
+    winRate: number
+    averageKills: number
+    averageDeaths: number
+    averageAssists: number
+    kda: number
+    bestChampion: ChampionDto | null
+}
+
+export interface RankedRankDto {
+    queueType: string
+    tier: string
+    rank: string
+    leaguePoints: number
+    wins: number
+    losses: number
+}
+
 export interface ParticipationDto {
     id: number
     matchId: string
@@ -85,19 +84,13 @@ export interface ParticipationDto {
     build: BuildDto | null
 }
 
-// --------------------------------------------------
-// Player and participations DTO
-// PlayerWithParticipationsDto in backend
-// --------------------------------------------------
-export interface PlayerWithParticipationsDto {
+export interface PlayerDetailsDto {
     player: PlayerDto
+    stats: PlayerStatsDto | null
+    rankedRanks: RankedRankDto[]
     participations: ParticipationDto[]
 }
 
-// --------------------------------------------------
-// Current game DTO
-// CurrentGameDto in backend
-// --------------------------------------------------
 export interface CurrentGameDto {
     inGame: boolean
     hidden: boolean
@@ -108,10 +101,6 @@ export interface CurrentGameDto {
     championName: string | null
 }
 
-// --------------------------------------------------
-// Match details DTO
-// MatchDetailsDto in backend
-// --------------------------------------------------
 export interface MatchDetailsDto {
     matchId: string
     queueId: number
@@ -121,12 +110,7 @@ export interface MatchDetailsDto {
     participations: ParticipationDto[]
 }
 
-// --------------------------------------------------
-// Pro build DTO
-// ProBuildDto in backend
-// --------------------------------------------------
-export interface ProBuildDto {
-    buildId: number
+export interface ChampionProBuildDto {
     matchId: string
     gameStartAt: string
     gameVersion: string
@@ -140,4 +124,42 @@ export interface ProBuildDto {
     league: string
     teamPosition: string
     build: BuildDto
+}
+
+export interface ChampionDetailsDto {
+    championId: number
+    championName: string
+    stats: ChampionStatsDto | null
+    recommendedBuild: RecommendedBuildDto | null
+    recentProBuilds: ChampionProBuildDto[]
+}
+
+export interface ProfessionalDto {
+    puuid: string
+    proName: string
+    teamName: string
+    league: string
+}
+
+export interface ProBuildDto {
+    matchId: string
+    gameStartAt: string
+    gameVersion: string
+    queueId: number
+    championId: number
+    championName: string
+    teamPosition: string
+    build: BuildDto
+}
+
+export interface ProfessionalDetailsDto {
+    puuid: string
+    proName: string
+    teamName: string
+    league: string
+    gameName: string
+    tagLine: string
+    platform: string
+    profileIconId: number
+    recentBuilds: ProBuildDto[]
 }

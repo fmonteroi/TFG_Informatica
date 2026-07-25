@@ -17,7 +17,10 @@ function ItemTooltip({
                      }: ItemTooltipProps) {
     if (!itemId || itemId === 0) {
         return (
-            <div className={`${sizeClassName} ${roundedClassName} ${emptyClassName}`} />
+            <div
+                aria-hidden="true"
+                className={`${sizeClassName} ${roundedClassName} ${emptyClassName}`}
+            />
         )
     }
 

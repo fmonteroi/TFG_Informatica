@@ -1,6 +1,8 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.dto.ProfessionalsRefreshResultDto;
+import es.unex.cume.tfg.backend.model.Professional;
+
+import java.util.List;
 
 /**
  * Service that manages professional players and their automatic refresh.
@@ -12,10 +14,9 @@ public interface ProfessionalService {
      */
     void initProfessionals();
 
-    /**
-     * Refreshes recent match data for professional players.
-     *
-     * @return the refresh result summary.
-     */
-    ProfessionalsRefreshResultDto refreshProfessionals();
+    void refreshProfessionals();
+
+    List<Professional> findAllProfessionals();
+
+    Professional findProfessional(String puuid);
 }

@@ -32,6 +32,12 @@ public class Player {
     @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participation> participations = new ArrayList<>();
 
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<RankedRank> rankedRanks = new ArrayList<>();
+
+    @OneToOne(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    private PlayerStats stats;
+
     public Player(){
 
     }
@@ -106,5 +112,21 @@ public class Player {
 
     public void setParticipations(List<Participation> participations) {
         this.participations = participations;
+    }
+
+    public List<RankedRank> getRankedRanks() {
+        return rankedRanks;
+    }
+
+    public void setRankedRanks(List<RankedRank> rankedRanks) {
+        this.rankedRanks = rankedRanks;
+    }
+
+    public PlayerStats getStats() {
+        return stats;
+    }
+
+    public void setStats(PlayerStats stats) {
+        this.stats = stats;
     }
 }

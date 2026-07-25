@@ -1,5 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
+import es.unex.cume.tfg.backend.dto.ChampionProBuildDto;
 import es.unex.cume.tfg.backend.dto.ProBuildDto;
 import es.unex.cume.tfg.backend.model.Build;
 import es.unex.cume.tfg.backend.repository.BuildRepository;
@@ -54,7 +55,7 @@ public class BuildServiceImpl implements BuildService {
      * @return the list of recent pro builds
      */
     @Override
-    public List<ProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit) {
+    public List<ChampionProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit) {
         // Default limit
         if (limit < 1) {
             limit = 10;
@@ -67,6 +68,21 @@ public class BuildServiceImpl implements BuildService {
         List<Build> builds = buildRepository.findRecentProBuildsByChampionId(championId, RANKED_QUEUE_IDS, pageRequest);
 
         // Converts the builds to DTOs and returns them
+        return builds.stream()
+                .map(ChampionProBuildDto::fromEntity)
+                .toList();
+    }
+
+    @Override
+    public List<ProBuildDto> findRecentBuildsByProfessionalPuuid(String puuid, int limit) {
+        if (limit < 1) {
+            limit = 10;
+        }
+
+        PageRequest pageRequest = PageRequest.of(0, limit);
+
+        List<Build> builds = buildRepository.findRecentBuildsByProfessionalPuuid(puuid, RANKED_QUEUE_IDS, pageRequest);
+
         return builds.stream()
                 .map(ProBuildDto::fromEntity)
                 .toList();

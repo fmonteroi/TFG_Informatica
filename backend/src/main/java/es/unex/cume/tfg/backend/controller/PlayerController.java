@@ -1,13 +1,15 @@
 package es.unex.cume.tfg.backend.controller;
 
 import es.unex.cume.tfg.backend.dto.CurrentGameDto;
-import es.unex.cume.tfg.backend.dto.PlayerWithParticipationsDto;
+import es.unex.cume.tfg.backend.dto.PlayerDetailsDto;
 import es.unex.cume.tfg.backend.model.Participation;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.model.Platform;
+import es.unex.cume.tfg.backend.model.RankedRank;
 import es.unex.cume.tfg.backend.service.CurrentGameService;
 import es.unex.cume.tfg.backend.service.ParticipationService;
 import es.unex.cume.tfg.backend.service.PlayerService;
+import es.unex.cume.tfg.backend.service.RankedRankService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,11 +25,16 @@ public class PlayerController {
     private final PlayerService playerService;
     private final ParticipationService participationService;
     private final CurrentGameService currentGameService;
+    private final RankedRankService rankedRankService;
 
-    public PlayerController(PlayerService playerService, ParticipationService participationService, CurrentGameService currentGameService) {
+    public PlayerController(PlayerService playerService,
+                            ParticipationService participationService,
+                            CurrentGameService currentGameService,
+                            RankedRankService rankedRankService) {
         this.playerService = playerService;
         this.participationService = participationService;
         this.currentGameService = currentGameService;
+        this.rankedRankService = rankedRankService;
     }
 
     /**
@@ -40,15 +47,16 @@ public class PlayerController {
      * @return the player and their participations.
      */
     @GetMapping("/search")
-    public ResponseEntity<PlayerWithParticipationsDto> searchPlayer(@RequestParam Platform platform, @RequestParam String gameName, @RequestParam String tagLine) {
+    public ResponseEntity<PlayerDetailsDto> searchPlayer(@RequestParam Platform platform, @RequestParam String gameName, @RequestParam String tagLine) {
         // Searches player
         Player player = playerService.searchPlayer(platform, gameName, tagLine);
 
-        // Gets participations
         List<Participation> participations = participationService.findByPuuid(player.getPuuid());
 
+        List<RankedRank> rankedRanks = rankedRankService.findByPuuid(player.getPuuid());
+
         // Returns player with participations
-        return ResponseEntity.ok(PlayerWithParticipationsDto.from(player, participations));
+        return ResponseEntity.ok(PlayerDetailsDto.from(player, rankedRanks, participations));
     }
 
     /**
@@ -60,13 +68,15 @@ public class PlayerController {
      * @return the refreshed player and their participations.
      */
     @PostMapping("/refresh")
-    public ResponseEntity<PlayerWithParticipationsDto> refreshPlayer(@RequestParam Platform platform, @RequestParam String puuid) {
+    public ResponseEntity<PlayerDetailsDto> refreshPlayer(@RequestParam Platform platform, @RequestParam String puuid) {
         // Refreshes player data
         Player player = playerService.refreshPlayer(platform, puuid);
 
         List<Participation> participations = participationService.findByPuuid(player.getPuuid());
 
-        return ResponseEntity.ok(PlayerWithParticipationsDto.from(player, participations));
+        List<RankedRank> rankedRanks = rankedRankService.findByPuuid(player.getPuuid());
+
+        return ResponseEntity.ok(PlayerDetailsDto.from(player, rankedRanks, participations));
     }
 
     /**

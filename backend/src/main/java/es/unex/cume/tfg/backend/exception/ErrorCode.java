@@ -17,6 +17,7 @@ public final class ErrorCode {
     public static final String PLAYER_NOT_FOUND = "PLAYER_NOT_FOUND";
     public static final String MATCH_NOT_FOUND = "MATCH_NOT_FOUND";
     public static final String CHAMPION_NOT_FOUND = "CHAMPION_NOT_FOUND";
+    public static final String PROFESSIONAL_NOT_FOUND = "PROFESSIONAL_NOT_FOUND";
 
     // 409 errors
     public static final String DATA_INTEGRITY_VIOLATION = "DATA_INTEGRITY_VIOLATION";

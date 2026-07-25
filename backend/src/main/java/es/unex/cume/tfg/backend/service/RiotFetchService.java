@@ -2,6 +2,7 @@ package es.unex.cume.tfg.backend.service;
 
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.riot.dto.CurrentGameInfoDto;
+import es.unex.cume.tfg.backend.riot.dto.LeagueEntryDto;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
 import es.unex.cume.tfg.backend.riot.dto.SummonerDto;
 
@@ -81,4 +82,6 @@ public interface RiotFetchService {
      * @return the current game if Riot reports one.
      */
     Optional<CurrentGameInfoDto> fetchCurrentGame(Platform platform, String puuid);
+
+    List<LeagueEntryDto> fetchLeagueEntries(Platform platform, String puuid);
 }

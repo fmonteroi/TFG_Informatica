@@ -23,15 +23,20 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerRepository playerRepository;
     private final RiotFetchService riotFetchService;
     private final MatchService matchService;
+    private final RankedRankService rankedRankService;
+    private final PlayerStatsService playerStatsService;
 
     // Lock map to prevent concurrent refreshes for the same player
     private final ConcurrentHashMap<String, ReentrantLock> refreshLocks = new ConcurrentHashMap<>();
 
 
-    public PlayerServiceImpl(PlayerRepository playerRepository, RiotFetchService riotFetchService, MatchService matchService) {
+    public PlayerServiceImpl(PlayerRepository playerRepository, RiotFetchService riotFetchService, MatchService matchService, RankedRankService rankedRankService,
+                             PlayerStatsService playerStatsService) {
         this.playerRepository = playerRepository;
         this.riotFetchService = riotFetchService;
         this.matchService = matchService;
+        this.rankedRankService = rankedRankService;
+        this.playerStatsService = playerStatsService;
     }
 
     /**
@@ -68,8 +73,15 @@ public class PlayerServiceImpl implements PlayerService {
     @Transactional
     @Override
     public Player searchPlayer(Platform platform, String gameName, String tagLine) {
-        // Get PUUID from Riot's API
-        String puuid = riotFetchService.fetchPuuid(platform, gameName, tagLine);
+        Optional<Player> localPlayer = playerRepository.findByPlatformAndGameNameIgnoreCaseAndTagLineIgnoreCase(platform, gameName, tagLine);
+
+        String puuid;
+
+        if (localPlayer.isPresent()) {
+            puuid = localPlayer.get().getPuuid();
+        } else {
+            puuid = riotFetchService.fetchPuuid(platform, gameName, tagLine);
+        }
 
         ReentrantLock lock = getPlayerLock(puuid);
         lock.lock();
@@ -82,8 +94,8 @@ public class PlayerServiceImpl implements PlayerService {
                 Player player = existingPlayer.get();
 
                 // If this player was created as "basic" (from match participants), completes initialization
-                if (player.getLastSyncAt() == null) {
-                    return initExistingPlayer(player, platform);
+                if (player.getLastSyncAt() == null || player.getStats() == null) {
+                    return syncPlayerData(player, platform);
                 }
 
                 return player;
@@ -125,27 +137,7 @@ public class PlayerServiceImpl implements PlayerService {
             // If player exists, gets it
             Player player = optionalPlayer.get();
 
-            // Gets last sync to know from when to load new matches
-            Instant lastSyncAt = player.getLastSyncAt();
-
-            // Updates summoner data (icon, level)
-            SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, puuid);
-            player.setProfileIconId(summonerDto.profileIconId());
-            player.setSummonerLevel(summonerDto.summonerLevel());
-
-            // If was never synced, load matches since last year, otherwise since lastSync
-            if (lastSyncAt == null) {
-                Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
-                matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
-            } else {
-                matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
-            }
-
-            // Update timestamp after loading matches
-            player.setLastSyncAt(Instant.now());
-
-            // Saves and return the updated player
-            return playerRepository.save(player);
+            return syncPlayerData(player, platform);
 
         } finally {
             lock.unlock();
@@ -215,44 +207,39 @@ public class PlayerServiceImpl implements PlayerService {
         newPlayer.setGameName(gameName);
         newPlayer.setTagLine(tagLine);
 
-        // Fetches summoner data (icon + level)
-        SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, puuid);
-        newPlayer.setProfileIconId(summonerDto.profileIconId());
-        newPlayer.setSummonerLevel(summonerDto.summonerLevel());
-
         // Saves player so there's an ID to link matches to
         Player savedPlayer = playerRepository.save(newPlayer);
 
-        // Loads and saves all matches from last 365 days (max 20)
-        Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
-        matchService.loadMatchesSince(platform, puuid, 20, oneYearAgo);
-
-        // Set lastSync timestamp only after successful match loading
-        savedPlayer.setLastSyncAt(Instant.now());
-
-        return playerRepository.save(savedPlayer);
+        return syncPlayerData(savedPlayer, platform);
     }
 
-    /**
-     * Completes initialization for players that already exist but were created with basic data only.
-     *
-     * @param player
-     * @param platform
-     * @return the initialized player.
-     */
-    private Player initExistingPlayer(Player player, Platform platform) {
+    private Player syncPlayerData(Player player, Platform platform){
+        Instant originalSyncAt = player.getLastSyncAt();
+        Instant newSyncAt = Instant.now();
+
         // Fetches summoner data (icon + level)
         SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, player.getPuuid());
         player.setProfileIconId(summonerDto.profileIconId());
         player.setSummonerLevel(summonerDto.summonerLevel());
 
-        // Loads and saves all matches from last 365 days (max 20)
-        Instant oneYearAgo = Instant.now().minus(365, ChronoUnit.DAYS);
-        matchService.loadMatchesSince(platform, player.getPuuid(), 20, oneYearAgo);
+        // Loads new matches
+        Instant matchesSince;
 
-        // Set lastSync timestamp only after successful match loading
-        player.setLastSyncAt(Instant.now());
+        if (originalSyncAt == null){
+            matchesSince = newSyncAt.minus(365, ChronoUnit.DAYS);
+        } else {
+            matchesSince = originalSyncAt;
+        }
 
+        matchService.loadMatchesSince(platform, player.getPuuid(), 20, matchesSince);
+
+        // Updates ranked information
+        rankedRankService.refreshRanks(platform, player);
+
+        // Calculates statistics using the updated participations
+        playerStatsService.calculatePlayerStats(player);
+
+        player.setLastSyncAt(newSyncAt);
         return playerRepository.save(player);
     }
 

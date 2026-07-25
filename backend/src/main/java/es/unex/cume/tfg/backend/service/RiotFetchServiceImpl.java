@@ -1,11 +1,9 @@
 package es.unex.cume.tfg.backend.service;
 
 import es.unex.cume.tfg.backend.model.Platform;
-import es.unex.cume.tfg.backend.riot.client.AccountClient;
-import es.unex.cume.tfg.backend.riot.client.MatchClient;
-import es.unex.cume.tfg.backend.riot.client.SpectatorClient;
-import es.unex.cume.tfg.backend.riot.client.SummonerClient;
+import es.unex.cume.tfg.backend.riot.client.*;
 import es.unex.cume.tfg.backend.riot.dto.CurrentGameInfoDto;
+import es.unex.cume.tfg.backend.riot.dto.LeagueEntryDto;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
 import es.unex.cume.tfg.backend.riot.dto.SummonerDto;
 import org.springframework.stereotype.Service;
@@ -24,16 +22,20 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     private final MatchClient matchClient;
     private final SummonerClient summonerClient;
     private final SpectatorClient spectatorClient;
+    private final LeagueClient leagueClient;
 
     public RiotFetchServiceImpl(AccountClient accountClient,
                                 MatchClient matchClient,
                                 SummonerClient summonerClient,
-                                SpectatorClient spectatorClient) {
+                                SpectatorClient spectatorClient,
+                                LeagueClient leagueClient
+                                ) {
 
         this.accountClient = accountClient;
         this.matchClient = matchClient;
         this.summonerClient = summonerClient;
         this.spectatorClient = spectatorClient;
+        this.leagueClient = leagueClient;
     }
 
     /**
@@ -155,8 +157,13 @@ public class RiotFetchServiceImpl implements RiotFetchService {
      * @param puuid
      * @return the current game when Riot reports one.
      */
-    @Override
     public Optional<CurrentGameInfoDto> fetchCurrentGame(Platform platform, String puuid) {
         return spectatorClient.fetchCurrentGameByPuuid(platform, puuid);
     }
+
+    public List<LeagueEntryDto> fetchLeagueEntries(Platform platform, String puuid) {
+        return leagueClient.getEntriesByPuuid(platform, puuid);
+    }
+
+
 }

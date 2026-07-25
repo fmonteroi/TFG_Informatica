@@ -1,5 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
+import es.unex.cume.tfg.backend.dto.ChampionProBuildDto;
 import es.unex.cume.tfg.backend.dto.ProBuildDto;
 import es.unex.cume.tfg.backend.model.Build;
 
@@ -34,6 +35,8 @@ public interface BuildService {
      * @param limit the maximum number of builds to return.
      * @return the recent professional builds.
      */
-    List<ProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit);
+    List<ChampionProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit);
+
+    List<ProBuildDto> findRecentBuildsByProfessionalPuuid(String puuid, int limit);
 }
 

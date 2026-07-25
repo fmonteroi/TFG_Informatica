@@ -1,18 +1,15 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.dto.ProfessionalsRefreshResultDto;
+import es.unex.cume.tfg.backend.exception.ProfessionalNotFoundException;
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.model.Professional;
-import es.unex.cume.tfg.backend.repository.PlayerRepository;
 import es.unex.cume.tfg.backend.repository.ProfessionalRepository;
 import es.unex.cume.tfg.backend.riot.client.RiotApiException;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.Optional;
 
 /**
  * Default implementation of ProfessionalService.
@@ -21,27 +18,18 @@ import java.util.concurrent.locks.ReentrantLock;
 public class ProfessionalServiceImpl implements ProfessionalService {
 
     private final ProfessionalRepository professionalRepository;
-    private final PlayerRepository playerRepository;
     private final PlayerService playerService;
     private final RiotFetchService riotFetchService;
-    private final MatchService matchService;
-
-    // Prevent multiple professional refresh jobs from running at the same time
-    private final ReentrantLock professionalsRefreshLock = new ReentrantLock();
 
 
     public ProfessionalServiceImpl(
             ProfessionalRepository professionalRepository,
-            PlayerRepository playerRepository,
             PlayerService playerService,
-            RiotFetchService riotFetchService,
-            MatchService matchService
+            RiotFetchService riotFetchService
     ) {
         this.professionalRepository = professionalRepository;
-        this.playerRepository = playerRepository;
         this.playerService = playerService;
         this.riotFetchService = riotFetchService;
-        this.matchService = matchService;
     }
 
     /**
@@ -53,6 +41,10 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
         // For each seed, it fetches the puuid, syncs the basic player and creates the professional
         for (ProfessionalSeed seed : seeds) {
+            if (professionalRepository.existsByProName(seed.proName())) {
+                continue;
+            }
+
             try {
                 // Fetches the PUUID from Riot's API
                 String puuid = riotFetchService.fetchPuuid(seed.platform(), seed.gameName(), seed.tagLine());
@@ -75,64 +67,58 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 player.setProfessional(professional);
 
                 professionalRepository.save(professional);
-            } catch (RiotApiException ex) {
-                System.err.printf(
-                        "Error fetching PUUID for %s using Riot ID %s#%s: %s%n",
-                        seed.proName(),
-                        seed.gameName(),
-                        seed.tagLine(),
-                        ex.getMessage()
-                );
+            } catch (RiotApiException exception) {
+                if (exception.getStatus().value() == 429) {
+                    System.err.println("Rate limit reached while initializing professionals");
+                    break;
+                }
+
+                System.err.println("Error initializing professional " + seed.proName() + ": " + exception.getMessage());
             }
         }
     }
 
     @Override
-    public ProfessionalsRefreshResultDto refreshProfessionals() {
-        if (!professionalsRefreshLock.tryLock()) {
-            return new ProfessionalsRefreshResultDto(
-                    0,
-                    0,
-                    false,
-                    "Ya hay un refresco de profesionales en curso."
-            );
-        }
+    public void refreshProfessionals() {
 
-        try {
-            List<Professional> professionals = professionalRepository.findAllWithPlayer();
+        List<Professional> professionals = professionalRepository.findAllWithPlayerOrderByLastSyncAt();
 
-            int checked = 0;
-            boolean stoppedByRateLimit = false;
+        int refreshed = 0;
 
-            for (Professional professional : professionals) {
-                try {
-                    refreshProfessional(professional);
-                    checked++;
-                } catch (RiotApiException ex) {
-                    if (ex.getStatus().value() == 429) {
-                        stoppedByRateLimit = true;
-                        break;
-                    }
-
-                    checked++;
-                } catch (Exception ex) {
-                    checked++;
+        for (Professional professional : professionals) {
+            try {
+                refreshProfessional(professional);
+                refreshed++;
+            } catch (RiotApiException exception) {
+                if (exception.getStatus().value() == 429) {
+                    System.err.println("Rate limit reached while refreshing professionals");
+                    break;
                 }
+
+                System.err.println("Riot API error refreshing professional " + professional.getProName() + ": " + exception.getMessage());
+
+            } catch (Exception exception) {
+                System.err.println("Unexpected error refreshing professional " + professional.getProName() + ": " + exception.getMessage());
             }
-
-            String message;
-            if (stoppedByRateLimit) {
-                message = "Rate Limit alcanzado.";
-            } else {
-                message = "Refresco completado.";
-            }
-
-            message = message + " Se actualizaron " + checked + "/" + professionals.size() + " profesionales.";
-
-            return new ProfessionalsRefreshResultDto(professionals.size(), checked, stoppedByRateLimit, message);
-        } finally {
-            professionalsRefreshLock.unlock();
         }
+
+        System.out.println("Professional refresh completed: " + refreshed + "/" + professionals.size());
+    }
+
+    @Override
+    public List<Professional> findAllProfessionals() {
+        return professionalRepository.findAllByOrderByProNameAsc();
+    }
+
+    @Override
+    public Professional findProfessional(String puuid) {
+        Optional<Professional> optionalProfessional = professionalRepository.findByPuuidWithPlayer(puuid);
+
+        if (optionalProfessional.isEmpty()) {
+            throw new ProfessionalNotFoundException(puuid);
+        }
+
+        return optionalProfessional.get();
     }
 
 
@@ -142,24 +128,9 @@ public class ProfessionalServiceImpl implements ProfessionalService {
      * @param professional the professional to refresh
      */
     private void refreshProfessional(Professional professional) {
-        // Basic variables for the match fetching
         Player player = professional.getPlayer();
-        Platform platform = player.getPlatform();
-        String puuid = professional.getPuuid();
-        Instant lastSyncAt = player.getLastSyncAt();
-        Instant now = Instant.now();
 
-        // If it's the first time refreshing, loads matches from the last 30 days (max 20)
-        if (lastSyncAt == null) {
-            Instant oneMonthAgo = now.minus(30, ChronoUnit.DAYS);
-            matchService.loadMatchesSince(platform, puuid, 20, oneMonthAgo);
-        } else { // Otherwise, loads matches since last build update (max 20)
-            matchService.loadMatchesSince(platform, puuid, 20, lastSyncAt);
-        }
-
-        // Updates last sync time
-        player.setLastSyncAt(Instant.now());
-        playerRepository.save(player);
+        playerService.refreshPlayer(player.getPlatform(), player.getPuuid());
     }
 
     /**

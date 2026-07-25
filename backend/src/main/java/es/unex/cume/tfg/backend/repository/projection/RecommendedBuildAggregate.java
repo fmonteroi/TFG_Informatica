@@ -1,0 +1,20 @@
+package es.unex.cume.tfg.backend.repository.projection;
+
+import es.unex.cume.tfg.backend.model.Champion;
+
+public record RecommendedBuildAggregate(
+        Champion champion,
+        Integer item0,
+        Integer item1,
+        Integer item2,
+        Integer item3,
+        Integer item4,
+        Integer item5,
+        Integer item6,
+        Integer roleBoundItem,
+        Integer summoner1Id,
+        Integer summoner2Id,
+        Long gamesPlayed,
+        Long wins
+) {
+}

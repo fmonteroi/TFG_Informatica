@@ -1,7 +1,11 @@
 package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Participation;
+import es.unex.cume.tfg.backend.repository.projection.PlayerChampionStatsAggregate;
+import es.unex.cume.tfg.backend.repository.projection.PlayerStatsAggregate;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -24,4 +28,31 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
      * @return the match participations.
      */
     List<Participation> findByMatchMatchId(String matchId);
+
+    @Query("""
+        SELECT new es.unex.cume.tfg.backend.repository.projection.PlayerStatsAggregate(
+            COUNT(p),
+            SUM(CASE WHEN p.win = true THEN 1 ELSE 0 END),
+            SUM(p.kills),
+            SUM(p.deaths),
+            SUM(p.assists)
+        )
+        FROM Participation p
+        WHERE p.player.puuid = :puuid
+        """)
+    PlayerStatsAggregate aggregatePlayerStats(@Param("puuid") String puuid);
+
+    @Query("""
+        SELECT new es.unex.cume.tfg.backend.repository.projection.PlayerChampionStatsAggregate(
+            p.champion,
+            COUNT(p),
+            SUM(CASE WHEN p.win = true THEN 1 ELSE 0 END)
+        )
+        FROM Participation p
+        WHERE p.player.puuid = :puuid
+        GROUP BY p.champion
+        ORDER BY COUNT(p) DESC, p.champion.championId ASC
+        """)
+    List<PlayerChampionStatsAggregate> aggregatePlayerStatsByChampion(@Param("puuid") String puuid);
+
 }

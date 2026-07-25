@@ -14,8 +14,10 @@ public enum Platform {
     ME1,
     NA1,
     OC1,
+    PH2,
     RU,
     SG2,
+    TH2,
     TR1,
     TW2,
     VN2

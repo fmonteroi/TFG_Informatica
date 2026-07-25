@@ -1,5 +1,6 @@
 package es.unex.cume.tfg.backend.repository;
 
+import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -25,4 +26,6 @@ public interface PlayerRepository extends JpaRepository<Player, String> {
      * @return true if the player exists.
      */
     boolean existsByPuuid(String puuid);
+
+    Optional<Player> findByPlatformAndGameNameIgnoreCaseAndTagLineIgnoreCase(Platform platform, String gameName, String tagLine);
 }

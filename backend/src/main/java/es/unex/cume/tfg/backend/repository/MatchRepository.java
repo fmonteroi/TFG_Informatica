@@ -3,6 +3,7 @@ package es.unex.cume.tfg.backend.repository;
 import es.unex.cume.tfg.backend.model.Match;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -24,4 +25,6 @@ public interface MatchRepository extends JpaRepository<Match, String> {
      * @return true if the match exists.
      */
     boolean existsByMatchId(String matchId);
+
+    Optional<Match> findFirstByQueueIdInOrderByGameStartAtDesc(List<Integer> queueIds);
 }

@@ -1,40 +1,44 @@
-import CurrentGameStatusCard from '../CurrentGameStatusCard.tsx'
-import type { CurrentGameDto } from '../../types/api.ts'
+import CurrentGameStatusCard from '../CurrentGameStatusCard'
+import type { CurrentGameDto, PlayerStatsDto, RankedRankDto } from '../../types/api'
+import RankCard from './RankCard'
+import PlayerStatsCard from './PlayerStatsCard'
 
 type PlayerSidebarProps = {
     currentGame: CurrentGameDto | null
     loadingCurrentGame: boolean
     currentGameError: string | null
+    rankedRanks: RankedRankDto[]
+    stats: PlayerStatsDto | null
     championMap: Map<number, string> | null
+}
+
+function findRank(ranks: RankedRankDto[], queueType: string) {
+    return ranks.find((rank) => rank.queueType === queueType) ?? null
 }
 
 function PlayerSidebar({
                            currentGame,
                            loadingCurrentGame,
                            currentGameError,
+                           rankedRanks,
+                           stats,
                            championMap,
                        }: PlayerSidebarProps) {
+    const soloRank = findRank(rankedRanks, 'RANKED_SOLO_5x5')
+    const flexRank = findRank(rankedRanks, 'RANKED_FLEX_SR')
+
     return (
-        <div className="space-y-6">
+        <aside className="space-y-4">
+            <RankCard title="Solo / Duo" rank={soloRank} />
+            <RankCard title="Flex" rank={flexRank} />
+            <PlayerStatsCard stats={stats} championMap={championMap} />
             <CurrentGameStatusCard
                 currentGame={currentGame}
                 loading={loadingCurrentGame}
                 error={currentGameError}
                 championMap={championMap}
             />
-
-            <aside className="rounded-2xl border border-slate-800 bg-slate-900 p-4 h-fit space-y-4">
-                <div className="flex items-center justify-between">
-                    <h2 className="w-full text-center text-xl font-bold">Estadísticas</h2>
-                </div>
-
-                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-4">
-                    <p className="text-sm text-slate-400">
-                        Futuras versiones
-                    </p>
-                </div>
-            </aside>
-        </div>
+        </aside>
     )
 }
 

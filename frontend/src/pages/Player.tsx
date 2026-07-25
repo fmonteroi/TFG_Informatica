@@ -3,7 +3,7 @@ import {useNavigate, useParams} from 'react-router-dom'
 import {getCurrentGame, getMatchById, refreshPlayer, searchPlayer} from '../api/backendApi'
 import PlayerSearchBar from '../components/player/PlayerSearchBar.tsx'
 import {useDragontailAssets} from '../lib/dragontail'
-import type {CurrentGameDto, MatchDetailsDto, ParticipationDto, PlayerWithParticipationsDto} from '../types/api'
+import type {CurrentGameDto, MatchDetailsDto, ParticipationDto, PlayerDetailsDto} from '../types/api'
 import { safeError } from '../lib/errors'
 import { sortMatchParticipations } from '../lib/lol'
 import { CARD_CLASS } from '../lib/constants'
@@ -31,7 +31,7 @@ function Player() {
     const { championMap, summonerSpellMap, itemInfoMap } = useDragontailAssets()
 
 
-    const [playerData, setPlayerData] = useState<PlayerWithParticipationsDto | null>(null)
+    const [playerData, setPlayerData] = useState<PlayerDetailsDto | null>(null)
     const [expandedMatchId, setExpandedMatchId] = useState<string | null>(null)
     const [matchCache, setMatchCache] = useState<Record<string, MatchDetailsDto>>({})
     const [loadingPlayer, setLoadingPlayer] = useState(true)
@@ -226,6 +226,8 @@ function Player() {
                             currentGame={currentGame}
                             loadingCurrentGame={loadingCurrentGame}
                             currentGameError={currentGameError}
+                            rankedRanks={playerData.rankedRanks}
+                            stats={playerData.stats}
                             championMap={championMap}
                         />
 

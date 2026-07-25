@@ -59,6 +59,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(ProfessionalNotFoundException.class)
+    public ResponseEntity<ApiErrorDto> handleProfessionalNotFound(ProfessionalNotFoundException ex) {
+        return buildResponse(
+                HttpStatus.NOT_FOUND,
+                ErrorCode.PROFESSIONAL_NOT_FOUND,
+                "Not Found",
+                "El profesional solicitado no existe."
+        );
+    }
+
     @ExceptionHandler(RiotApiException.class)
     public ResponseEntity<ApiErrorDto> handleRiotApiException(RiotApiException ex) {
         int status = ex.getStatus().value();

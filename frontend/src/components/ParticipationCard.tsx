@@ -75,7 +75,11 @@ function ParticipationCard({
                                 className="h-20 w-20 rounded-2xl"
                             />
                         ) : (
-                            <div className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"/>
+                            <div
+                                role="img"
+                                aria-label="Icono de campeón no disponible"
+                                className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"
+                            />
                         )}
 
                         <div className="flex min-w-0 flex-wrap items-center gap-4">
@@ -97,6 +101,7 @@ function ParticipationCard({
                                         return (
                                             <div
                                                 key={`card-spell-empty-${index}`}
+                                                aria-hidden="true"
                                                 className="h-12 w-12 rounded-xl border border-slate-700 bg-slate-800"
                                             />
                                         )
