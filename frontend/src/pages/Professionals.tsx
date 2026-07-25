@@ -66,11 +66,7 @@ function Professionals() {
     return (
         <div className="space-y-7">
             <header className="border-b border-slate-800 pb-6">
-                <p className="text-xs font-semibold uppercase text-cyan-300">Escena competitiva</p>
-                <h1 className="mt-2 text-3xl font-black">Profesionales</h1>
-                <p className="mt-2 max-w-2xl text-slate-400">
-                    Explora los equipos y consulta la actividad ranked reciente de cada jugador.
-                </p>
+                <h1 className="text-3xl font-black">Profesionales</h1>
             </header>
 
             {loading && <section className={CARD_CLASS}>Cargando profesionales...</section>}

@@ -41,10 +41,6 @@ public class ProfessionalServiceImpl implements ProfessionalService {
 
         // For each seed, it fetches the puuid, syncs the basic player and creates the professional
         for (ProfessionalSeed seed : seeds) {
-            if (professionalRepository.existsByProName(seed.proName())) {
-                continue;
-            }
-
             try {
                 // Fetches the PUUID from Riot's API
                 String puuid = riotFetchService.fetchPuuid(seed.platform(), seed.gameName(), seed.tagLine());
@@ -52,19 +48,18 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 // Syncs the basic player info
                 Player player = playerService.syncPlayerForProfessional(seed.platform(), seed.gameName(), seed.tagLine(), puuid);
 
-                // If this player is already linked to a professional, skip it
-                if (player.getProfessional() != null) {
-                    continue;
+                Professional professional = player.getProfessional();
+
+                if (professional == null) {
+                    professional = new Professional();
+                    professional.setPlayer(player);
+                    player.setProfessional(professional);
                 }
 
-                // Otherwise, creates the professional
-                Professional professional = new Professional();
-                professional.setPlayer(player);
+                // Updates mutable professional data on every initialization
                 professional.setProName(seed.proName());
                 professional.setTeamName(seed.teamName());
                 professional.setLeague(seed.league());
-
-                player.setProfessional(professional);
 
                 professionalRepository.save(professional);
             } catch (RiotApiException exception) {
@@ -144,7 +139,7 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 new ProfessionalSeed(Platform.EUW1, "Elyoya", "komanche uchiha", "elite", "KOI", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Alvaro", "alvarooo", "000", "KOI", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Supa", "tukaan", "tukan", "KOI", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Myrwn", "snoopy", "kite", "KOI", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Myrwn", "denji", "kite", "KOI", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "jojopyun", "VJBYYTF0AO", "EUW", "KOI", "LEC"),
 
                 // G2
@@ -157,14 +152,14 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 // Fnatic
                 new ProfessionalSeed(Platform.EUW1, "Razork", "Razørk Activoo", "razzz", "Fnatic", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Vladi", "J1HUIV", "000", "Fnatic", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Upset", "afkdoks", "3101", "Fnatic", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Upset", "FNC Upset", "0308", "Fnatic", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Empyros", "pt4", "000", "Fnatic", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Lospa", "i want to win", "이기고싶다", "Fnatic", "LEC"),
 
                 // GIANTX
                 new ProfessionalSeed(Platform.EUW1, "Lot", "chenzelot", "LOT", "GIANTX", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "ISMA", "ismααα", "EUW", "GIANTX", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Jackies", "Michael Jackson", "MJWIN", "GIANTX", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Jackies", "detdert mid acc", "RANK1", "GIANTX", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Noah", "GX Monkey", "XDD", "GIANTX", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Jun", "Guilhoto", "Messi", "GIANTX", "LEC"),
 
@@ -183,11 +178,11 @@ public class ProfessionalServiceImpl implements ProfessionalService {
                 new ProfessionalSeed(Platform.EUW1, "Parus", "Thumbs Down", "4847", "NAVI", "LEC"),
 
                 // Vitality
-                new ProfessionalSeed(Platform.EUW1, "Naak Nako", "El Matador", "VIT", "Vitality", "LEC"),
+                new ProfessionalSeed(Platform.EUW1, "Naak Nako", "VIT NaakNako", "TOP", "Vitality", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Lyncas", "JG top boy", "lync1", "Vitality", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Humanoid", "Marek Brazda1", "DOG", "Vitality", "LEC"),
                 new ProfessionalSeed(Platform.EUW1, "Carzzy", "hovinko z kose", "marek", "Vitality", "LEC"),
-                new ProfessionalSeed(Platform.EUW1, "Fleshy", "VIT Fleshy", "EU1", "Vitality", "LEC")
+                new ProfessionalSeed(Platform.EUW1, "Fleshy", "Passed Pawn", "EUW2", "Vitality", "LEC")
         );
     }
 

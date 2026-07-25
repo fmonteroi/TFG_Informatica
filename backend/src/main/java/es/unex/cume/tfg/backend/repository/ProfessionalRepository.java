@@ -37,6 +37,4 @@ public interface ProfessionalRepository extends JpaRepository<Professional, Stri
             WHERE professional.puuid = :puuid
             """)
     Optional<Professional> findByPuuidWithPlayer(@Param("puuid") String puuid);
-
-    boolean existsByProName(String proName);
 }

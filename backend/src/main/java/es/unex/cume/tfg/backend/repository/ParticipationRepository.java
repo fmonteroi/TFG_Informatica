@@ -51,7 +51,7 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
         FROM Participation p
         WHERE p.player.puuid = :puuid
         GROUP BY p.champion
-        ORDER BY COUNT(p) DESC, p.champion.championId ASC
+        ORDER BY COUNT(p) DESC, MIN(p.champion.championId) ASC
         """)
     List<PlayerChampionStatsAggregate> aggregatePlayerStatsByChampion(@Param("puuid") String puuid);
 

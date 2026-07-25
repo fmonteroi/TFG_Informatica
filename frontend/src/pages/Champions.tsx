@@ -71,14 +71,8 @@ function Champions() {
     return (
         <div className="space-y-7">
             <header className="border-b border-slate-800 pb-6">
-                <p className="text-xs font-semibold uppercase text-cyan-300">Catálogo</p>
-                <div className="mt-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <h1 className="text-3xl font-black">Campeones</h1>
-                        <p className="mt-2 text-slate-400">
-                            Consulta estadísticas, recomendaciones y builds profesionales.
-                        </p>
-                    </div>
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <h1 className="text-3xl font-black">Campeones</h1>
 
                     <form onSubmit={handleSubmit} className="w-full max-w-md">
                         <label htmlFor="champion-search" className="sr-only">
