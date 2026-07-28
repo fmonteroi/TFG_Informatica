@@ -10,13 +10,27 @@ import java.util.List;
 public interface ProfessionalService {
 
     /**
-     * Initializes professional players in the local database.
+     * Synchronizes professional players with the configured roster.
      */
-    void initProfessionals();
+    void synchronizeProfessionals();
 
+    /**
+     * Refreshes data for every professional player.
+     */
     void refreshProfessionals();
 
+    /**
+     * Finds every professional player.
+     *
+     * @return professional players ordered by name
+     */
     List<Professional> findAllProfessionals();
 
+    /**
+     * Finds one professional player.
+     *
+     * @param puuid professional player PUUID
+     * @return matching professional player
+     */
     Professional findProfessional(String puuid);
 }

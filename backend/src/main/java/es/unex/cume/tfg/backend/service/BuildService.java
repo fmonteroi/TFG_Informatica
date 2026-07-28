@@ -3,6 +3,7 @@ package es.unex.cume.tfg.backend.service;
 import es.unex.cume.tfg.backend.dto.ChampionProBuildDto;
 import es.unex.cume.tfg.backend.dto.ProBuildDto;
 import es.unex.cume.tfg.backend.model.Build;
+import es.unex.cume.tfg.backend.model.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,14 +30,22 @@ public interface BuildService {
     Build saveBuild(Build build);
 
     /**
-     * Finds recent professional builds for a champion.
+     * Finds recent professional builds for a champion and role.
      *
-     * @param championId the champion ID.
-     * @param limit the maximum number of builds to return.
-     * @return the recent professional builds.
+     * @param championId champion identifier
+     * @param role champion role
+     * @param limit maximum number of builds
+     * @return recent professional builds
      */
-    List<ChampionProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit);
+    List<ChampionProBuildDto> findRecentProBuildsByChampionIdAndRole(Integer championId, Role role, int limit);
 
+    /**
+     * Finds a professional player's latest ranked builds.
+     *
+     * @param puuid professional player PUUID
+     * @param limit maximum number of builds
+     * @return latest professional builds
+     */
     List<ProBuildDto> findRecentBuildsByProfessionalPuuid(String puuid, int limit);
 }
 

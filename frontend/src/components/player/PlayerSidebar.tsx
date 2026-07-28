@@ -26,6 +26,16 @@ function PlayerSidebar({
                        }: PlayerSidebarProps) {
     const soloRank = findRank(rankedRanks, 'RANKED_SOLO_5x5')
     const flexRank = findRank(rankedRanks, 'RANKED_FLEX_SR')
+    let soloRankCard
+    let flexRankCard
+
+    if (soloRank) {
+        soloRankCard = <RankCard title="Solo / Duo" rank={soloRank} />
+    }
+
+    if (flexRank) {
+        flexRankCard = <RankCard title="Flex" rank={flexRank} />
+    }
 
     return (
         <aside className="space-y-4">
@@ -35,8 +45,8 @@ function PlayerSidebar({
                 error={currentGameError}
                 championMap={championMap}
             />
-            <RankCard title="Solo / Duo" rank={soloRank} />
-            <RankCard title="Flex" rank={flexRank} />
+            {soloRankCard}
+            {flexRankCard}
             <PlayerStatsCard stats={stats} championMap={championMap} />
         </aside>
     )

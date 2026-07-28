@@ -4,7 +4,7 @@ import TeamCard from '../components/professionals/TeamCard'
 import type { ProfessionalDto } from '../types/api'
 import { safeError } from '../lib/errors'
 import { CARD_CLASS } from '../lib/constants'
-import { professionalRoleOrder } from '../lib/professionals'
+import { roleOrder } from '../lib/lol'
 
 function Professionals() {
     const [professionals, setProfessionals] = useState<ProfessionalDto[]>([])
@@ -45,7 +45,12 @@ function Professionals() {
         const grouped = new Map<string, ProfessionalDto[]>()
 
         professionals.forEach((professional) => {
-            const teamMembers = grouped.get(professional.teamName) ?? []
+            let teamMembers = grouped.get(professional.teamName)
+
+            if (!teamMembers) {
+                teamMembers = []
+            }
+
             teamMembers.push(professional)
             grouped.set(professional.teamName, teamMembers)
         })
@@ -53,8 +58,8 @@ function Professionals() {
         grouped.forEach((members) => {
             members.sort(
                 (first, second) =>
-                    professionalRoleOrder(first.proName) -
-                    professionalRoleOrder(second.proName),
+                    roleOrder(first.role) -
+                    roleOrder(second.role),
             )
         })
 

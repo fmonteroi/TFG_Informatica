@@ -8,7 +8,11 @@ type CurrentGameStatusCardProps = {
 }
 
 function statusDotClass(inGame: boolean) {
-    return inGame ? 'bg-emerald-400' : 'bg-rose-400'
+    if (inGame) {
+        return 'bg-emerald-400'
+    } else {
+        return 'bg-rose-400'
+    }
 }
 
 function formatGameLength(seconds: number | null) {
@@ -63,8 +67,33 @@ function CurrentGameStatusCard({
     }
 
 
-    const championIcon =
-        currentGame.championId != null ? championMap?.get(currentGame.championId) ?? null : null
+    let championIcon = null
+
+    if (currentGame.championId != null && championMap != null) {
+        championIcon = championMap.get(currentGame.championId)
+    }
+
+    let statusText = 'Desconectado'
+
+    if (currentGame.inGame) {
+        statusText = 'En partida'
+    }
+
+    let championContent
+
+    if (championIcon) {
+        championContent = (
+            <img
+                src={championIcon}
+                alt={currentGame.championName ?? 'Champion'}
+                className="h-16 w-16 rounded-2xl"
+            />
+        )
+    } else {
+        championContent = (
+            <div className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"/>
+        )
+    }
 
     return (
         <section className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
@@ -73,7 +102,7 @@ function CurrentGameStatusCard({
                     <span className={`h-3 w-3 rounded-full ${statusDotClass(currentGame.inGame)}`}/>
 
                     <p className="font-semibold text-slate-100">
-                        {currentGame.inGame ? 'En partida' : 'Desconectado'}
+                        {statusText}
                     </p>
                 </div>
 
@@ -93,15 +122,7 @@ function CurrentGameStatusCard({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        {championIcon ? (
-                            <img
-                                src={championIcon}
-                                alt={currentGame.championName ?? 'Champion'}
-                                className="h-16 w-16 rounded-2xl"
-                            />
-                        ) : (
-                            <div className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"/>
-                        )}
+                        {championContent}
 
                         <div className="min-w-0">
                             <p className="text-2xl font-medium text-slate-100">

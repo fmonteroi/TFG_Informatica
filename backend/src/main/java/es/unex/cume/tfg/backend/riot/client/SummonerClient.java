@@ -19,6 +19,13 @@ public class SummonerClient {
     private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
+    /**
+     * Creates the Riot summoner client.
+     *
+     * @param restClient shared REST client
+     * @param baseUrlBuilder Riot URL builder
+     * @param riotErrorHandler Riot error handler
+     */
     public SummonerClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
         this.baseUrlBuilder = baseUrlBuilder;
@@ -26,13 +33,14 @@ public class SummonerClient {
     }
 
     /**
-     * Fetches summoner profile data by PUUID.
+     * Gets summoner profile data by PUUID.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
      * @return the Riot summoner DTO.
      */
     public SummonerDto fetchByPuuid(Platform platform, String puuid) {
+        // Builds the platform Summoner-V4 URL
         String baseUrl = baseUrlBuilder.buildPlatformBaseUrl(platform); // euw1.api.riotgames.com
 
         URI uri = UriComponentsBuilder
@@ -42,6 +50,7 @@ public class SummonerClient {
                 .encode()
                 .toUri();
 
+        // Sends the request and maps the summoner response
         return restClient.get()
                 .uri(uri)
                 .retrieve()

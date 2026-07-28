@@ -13,6 +13,11 @@ import java.util.Optional;
  */
 public interface ProfessionalRepository extends JpaRepository<Professional, String> {
 
+    /**
+     * Finds all professional players ordered by professional name.
+     *
+     * @return ordered professional players
+     */
     List<Professional> findAllByOrderByProNameAsc();
 
     /**
@@ -30,6 +35,12 @@ public interface ProfessionalRepository extends JpaRepository<Professional, Stri
             """)
     List<Professional> findAllWithPlayerOrderByLastSyncAt();
 
+    /**
+     * Finds a professional player with their player account loaded.
+     *
+     * @param puuid professional player PUUID
+     * @return professional player when available
+     */
     @Query("""
             SELECT professional
             FROM Professional professional

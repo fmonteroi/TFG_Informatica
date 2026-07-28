@@ -4,11 +4,10 @@ import { getProfessionalByPuuid } from '../api/backendApi'
 import ParticipationCard from '../components/ParticipationCard'
 import TeamLogo from '../components/professionals/TeamLogo'
 import { getProfileIconUrl, useDragontailAssets } from '../lib/dragontail'
-import { professionalRole } from '../lib/professionals'
 import type { ProfessionalDetailsDto } from '../types/api'
 import { safeError } from '../lib/errors'
 import { formatDate } from '../lib/format'
-import { queueLabel } from '../lib/lol'
+import { formatRole, queueLabel } from '../lib/lol'
 import { CARD_CLASS } from '../lib/constants'
 
 function ProfessionalProfile() {
@@ -62,28 +61,88 @@ function ProfessionalProfile() {
     }
 
     const normalProfileUrl = `/jugador/${encodeURIComponent(professional.platform)}/${encodeURIComponent(professional.gameName)}/${encodeURIComponent(professional.tagLine)}`
+    let profileIcon
+
+    if (dataDragonVersion) {
+        profileIcon = (
+            <img
+                src={getProfileIconUrl(
+                    professional.profileIconId,
+                    dataDragonVersion,
+                )}
+                alt={`Icono de perfil de ${professional.proName}`}
+                className="h-20 w-20 rounded-lg border border-slate-700"
+            />
+        )
+    } else {
+        profileIcon = (
+            <div
+                role="img"
+                aria-label="Icono de perfil cargando"
+                className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
+            />
+        )
+    }
+
+    let recentBuildsContent
+
+    if (professional.recentBuilds.length === 0) {
+        recentBuildsContent = (
+            <div className={CARD_CLASS}>
+                <p className="text-slate-400">
+                    No hay builds recientes disponibles.
+                </p>
+            </div>
+        )
+    } else {
+        recentBuildsContent = (
+            <div className="space-y-4">
+                {professional.recentBuilds.map((build) => (
+                    <ParticipationCard
+                        key={`${build.matchId}-${build.championId}`}
+                        tone="neutral"
+                        topLeft={
+                            <span className="rounded-md bg-slate-800 px-3 py-2 text-sm font-semibold">
+                                {queueLabel(build.queueId)}
+                            </span>
+                        }
+                        topRight={
+                            <span className="text-sm text-slate-300">
+                                {formatDate(build.gameStartAt)}
+                            </span>
+                        }
+                        championIcon={championMap?.get(build.championId) ?? null}
+                        championName={build.championName}
+                        summaryLine={formatRole(build.teamPosition)}
+                        spellIds={[
+                            build.build.summoner1Id,
+                            build.build.summoner2Id,
+                        ]}
+                        spellMap={summonerSpellMap}
+                        mainItemIds={[
+                            build.build.item0,
+                            build.build.item1,
+                            build.build.item2,
+                            build.build.item3,
+                            build.build.item4,
+                            build.build.item5,
+                        ]}
+                        trinketItemId={build.build.item6}
+                        specialItemId={build.build.roleBoundItem}
+                        showSpecialItem={build.teamPosition === 'BOTTOM'}
+                        itemInfoMap={itemInfoMap}
+                    />
+                ))}
+            </div>
+        )
+    }
 
     return (
         <div className="space-y-8">
             <header className="border-b border-slate-800 pb-6">
                 <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
                     <div className="flex items-center gap-4">
-                        {dataDragonVersion ? (
-                            <img
-                                src={getProfileIconUrl(
-                                    professional.profileIconId,
-                                    dataDragonVersion,
-                                )}
-                                alt={`Icono de perfil de ${professional.proName}`}
-                                className="h-20 w-20 rounded-lg border border-slate-700"
-                            />
-                        ) : (
-                            <div
-                                role="img"
-                                aria-label="Icono de perfil cargando"
-                                className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
-                            />
-                        )}
+                        {profileIcon}
                         <div>
                             <p className="text-xs font-semibold uppercase text-cyan-300">
                                 Perfil profesional
@@ -114,7 +173,7 @@ function ProfessionalProfile() {
                     <div className="rounded-lg border border-slate-800 bg-slate-900 p-3">
                         <dt className="text-xs uppercase text-slate-500">Rol</dt>
                         <dd className="mt-1 font-semibold">
-                            {professionalRole(professional.proName)}
+                            {formatRole(professional.role)}
                         </dd>
                     </div>
                     <div className="rounded-lg border border-slate-800 bg-slate-900 p-3">
@@ -133,54 +192,11 @@ function ProfessionalProfile() {
                         <h2 className="mt-1 text-2xl font-bold">Últimas probuilds</h2>
                     </div>
                     <span className="text-sm text-slate-400">
-                        {professional.recentBuilds.length} de 20
+                        {professional.recentBuilds.length} builds
                     </span>
                 </div>
 
-                {professional.recentBuilds.length === 0 ? (
-                    <div className={CARD_CLASS}>
-                        <p className="text-slate-400">No hay builds recientes disponibles.</p>
-                    </div>
-                ) : (
-                    <div className="space-y-4">
-                        {professional.recentBuilds.map((build) => (
-                            <ParticipationCard
-                                key={`${build.matchId}-${build.championId}`}
-                                tone="neutral"
-                                topLeft={
-                                    <span className="rounded-md bg-slate-800 px-3 py-2 text-sm font-semibold">
-                                        {queueLabel(build.queueId)}
-                                    </span>
-                                }
-                                topRight={
-                                    <span className="text-sm text-slate-300">
-                                        {formatDate(build.gameStartAt)}
-                                    </span>
-                                }
-                                championIcon={championMap?.get(build.championId) ?? null}
-                                championName={build.championName}
-                                summaryLine={`${build.teamPosition || 'Sin rol'} · Parche ${build.gameVersion}`}
-                                spellIds={[
-                                    build.build.summoner1Id,
-                                    build.build.summoner2Id,
-                                ]}
-                                spellMap={summonerSpellMap}
-                                mainItemIds={[
-                                    build.build.item0,
-                                    build.build.item1,
-                                    build.build.item2,
-                                    build.build.item3,
-                                    build.build.item4,
-                                    build.build.item5,
-                                ]}
-                                trinketItemId={build.build.item6}
-                                specialItemId={build.build.roleBoundItem}
-                                showSpecialItem={build.teamPosition === 'BOTTOM'}
-                                itemInfoMap={itemInfoMap}
-                            />
-                        ))}
-                    </div>
-                )}
+                {recentBuildsContent}
             </section>
         </div>
     )

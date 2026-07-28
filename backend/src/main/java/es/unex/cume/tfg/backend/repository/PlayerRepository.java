@@ -27,5 +27,13 @@ public interface PlayerRepository extends JpaRepository<Player, String> {
      */
     boolean existsByPuuid(String puuid);
 
+    /**
+     * Finds a stored player by Riot ID and platform.
+     *
+     * @param platform Riot platform
+     * @param gameName Riot game name
+     * @param tagLine Riot tag line
+     * @return matching player when available
+     */
     Optional<Player> findByPlatformAndGameNameIgnoreCaseAndTagLineIgnoreCase(Platform platform, String gameName, String tagLine);
 }

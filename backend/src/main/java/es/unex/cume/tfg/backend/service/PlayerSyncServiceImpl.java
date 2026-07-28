@@ -21,6 +21,11 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
 
     private final PlayerRepository playerRepository;
 
+    /**
+     * Creates the basic player synchronization service.
+     *
+     * @param playerRepository player repository
+     */
     public PlayerSyncServiceImpl(PlayerRepository playerRepository) {
         this.playerRepository = playerRepository;
     }
@@ -28,13 +33,13 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
     /**
      * Synchronizes basic player information from a MatchDto.Participant.
      *
-     * @param participant
-     * @param platform
+     * @param participant Riot match participant
+     * @param platform Riot platform
      * @return the synchronized player.
      */
     @Override
     public Player syncBasicPlayer(MatchDto.Participant participant, Platform platform) {
-        // Check if player already exists by PUUID
+        // Checks the PUUID first to avoid duplicate players
         Optional<Player> optionalPlayer = playerRepository.findByPuuid(participant.puuid());
 
         // If exists, returns it
@@ -42,7 +47,7 @@ public class PlayerSyncServiceImpl implements PlayerSyncService {
             return optionalPlayer.get();
         }
 
-        // Otherwise, creates a new Player entity with the basic information and saves it
+        // Creates a basic player that can be completed on a profile search
         Player player = new Player();
         player.setPuuid(participant.puuid());
         player.setPlatform(platform);

@@ -20,6 +20,13 @@ public class SpectatorClient {
     private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
+    /**
+     * Creates the Riot spectator client.
+     *
+     * @param restClient shared REST client
+     * @param baseUrlBuilder Riot URL builder
+     * @param riotErrorHandler Riot error handler
+     */
     public SpectatorClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
         this.baseUrlBuilder = baseUrlBuilder;
@@ -27,13 +34,14 @@ public class SpectatorClient {
     }
 
     /**
-     * Fetches the current active game for a player.
+     * Gets the current active game for a player.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
      * @return the current game if Riot reports one.
      */
     public Optional<CurrentGameInfoDto> fetchCurrentGameByPuuid(Platform platform, String puuid) {
+        // Builds the platform Spectator-V5 URL
         String baseUrl = baseUrlBuilder.buildPlatformBaseUrl(platform); // euw1.api.riotgames.com
 
         URI uri = UriComponentsBuilder
@@ -44,6 +52,7 @@ public class SpectatorClient {
                 .toUri();
 
         try {
+            // Sends the request and maps the active game response
             CurrentGameInfoDto currentGame = restClient.get()
                     .uri(uri)
                     .retrieve()
@@ -52,7 +61,7 @@ public class SpectatorClient {
 
             return Optional.ofNullable(currentGame);
         } catch (RiotApiException ex) {
-            // If the player is not currently in a game, API returns 404
+            // Riot returns 404 when the player is not in a game
             if (ex.getStatus().value() == 404) {
                 return Optional.empty();
             }

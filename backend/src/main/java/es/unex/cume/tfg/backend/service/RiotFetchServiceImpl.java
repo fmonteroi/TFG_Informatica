@@ -24,6 +24,15 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     private final SpectatorClient spectatorClient;
     private final LeagueClient leagueClient;
 
+    /**
+     * Creates the Riot data service.
+     *
+     * @param accountClient Riot account client
+     * @param matchClient Riot match client
+     * @param summonerClient Riot summoner client
+     * @param spectatorClient Riot spectator client
+     * @param leagueClient Riot league client
+     */
     public RiotFetchServiceImpl(AccountClient accountClient,
                                 MatchClient matchClient,
                                 SummonerClient summonerClient,
@@ -39,7 +48,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     }
 
     /**
-     * Fetches the PUUID of a player given their Riot game name and tag line.
+     * Gets the PUUID of a player from their Riot ID.
      *
      * @param platform the platform/region
      * @param gameName the player's game name
@@ -50,12 +59,19 @@ public class RiotFetchServiceImpl implements RiotFetchService {
         return accountClient.fetchByRiotId(platform, gameName, tagLine).puuid();
     }
 
+    /**
+     * Gets summoner profile data by PUUID.
+     *
+     * @param platform Riot platform
+     * @param puuid player PUUID
+     * @return summoner profile data
+     */
     public SummonerDto fetchSummoner(Platform platform, String puuid) {
         return summonerClient.fetchByPuuid(platform, puuid);
     }
 
     /**
-     * Fetches a single page of match IDs from Riot API.
+     * Gets a single page of match IDs from Riot API.
      *
      * @param platform  the platform/region
      * @param puuid     the player's PUUID
@@ -68,7 +84,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     }
 
     /**
-     * Fetches all match IDs for a player paginating in blocks of 100.
+     * Gets all match IDs for a player in blocks of 100.
      * Stops when there are no more matches or the maxMatches limit is reached.
      *
      * Note: Unused because development api kay has very low rate limits. Used for more than 100 matches.
@@ -80,41 +96,36 @@ public class RiotFetchServiceImpl implements RiotFetchService {
      * @return the list of all match IDs found
      */
     public List<String> fetchAllMatchIdsSince(Platform platform, String puuid, int maxMatches, Long startTime) {
-        // Creates a list to save all match IDs
+        // Stores IDs from every requested page
         List<String> allMatchIds = new ArrayList<>();
 
-        // Variables to control pagination
+        // Starts Riot pagination in blocks of 100
         int start = 0;
         int batchSize = 100;
 
-        // Loop until we have fetched maxMatches or there are no more matches
+        // Continues until the limit or the end of the history
         while (allMatchIds.size() < maxMatches) {
-            // Calculates left matches
             int remaining = maxMatches - allMatchIds.size();
             int count = batchSize;
 
-            // If remaining is smaller than batch size, adjusts the count for the last fetch
             if (remaining < batchSize) {
                 count = remaining;
             }
 
-            // Fetches a batch of match IDs
+            // Gets the next page of match IDs
             List<String> batch = matchClient.getMatchIdsByPuuidSince(platform, puuid, count, start, startTime);
 
-            // If the batch is empty, returns all match IDs
             if (batch.isEmpty()) {
                 return allMatchIds;
             }
 
-            // Adds the batch to the list of all match IDs
             allMatchIds.addAll(batch);
 
-            // If there are no more matches to fetch, returns all match IDs
             if (batch.size() < count) {
                 return allMatchIds;
             }
 
-            // Increments the start index for the next batch
+            // Moves the offset to the next Riot page
             start = start + batchSize;
         }
 
@@ -122,7 +133,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     }
 
     /**
-     * Fetches the match information of a match.
+     * Gets match information by match ID.
      *
      * @param platform the platform/region
      * @param matchId  the match ID
@@ -133,7 +144,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     }
 
     /**
-     * Fetches the recent matches of a player.
+     * Gets the recent matches of a player.
      *
      * @param platform the platform/region
      * @param gameName the player's game name
@@ -142,6 +153,7 @@ public class RiotFetchServiceImpl implements RiotFetchService {
      * @return the list of match DTOs
      */
     public List<MatchDto> fetchRecentMatches(Platform platform, String gameName, String tagLine, int count) {
+        // Resolves the account before getting its match IDs
         String puuid = fetchPuuid(platform, gameName, tagLine);
         List<String> matchIds = fetchMatchIdsSince(platform, puuid, count, null);
 
@@ -151,16 +163,23 @@ public class RiotFetchServiceImpl implements RiotFetchService {
     }
 
     /**
-     * Fetches the current game information of a player if they are currently in a game.
+     * Gets current game information when the player is in a game.
      *
-     * @param platform
-     * @param puuid
+     * @param platform Riot platform
+     * @param puuid player PUUID
      * @return the current game when Riot reports one.
      */
     public Optional<CurrentGameInfoDto> fetchCurrentGame(Platform platform, String puuid) {
         return spectatorClient.fetchCurrentGameByPuuid(platform, puuid);
     }
 
+    /**
+     * Gets ranked queue results by PUUID.
+     *
+     * @param platform Riot platform
+     * @param puuid player PUUID
+     * @return ranked queue results
+     */
     public List<LeagueEntryDto> fetchLeagueEntries(Platform platform, String puuid) {
         return leagueClient.getEntriesByPuuid(platform, puuid);
     }

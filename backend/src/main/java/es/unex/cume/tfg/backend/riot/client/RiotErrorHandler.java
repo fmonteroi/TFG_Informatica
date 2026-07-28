@@ -21,7 +21,10 @@ public class RiotErrorHandler {
      * @throws IOException if the response body cannot be read.
      */
     public void handleError(HttpRequest request, ClientHttpResponse response) throws IOException {
+        // Reads the response body before its stream is closed
         String body = new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Adds request and response details to the exception message
         String message = "%s %s -> %s. Body: %s".formatted(
                 request.getMethod(),
                 request.getURI(),

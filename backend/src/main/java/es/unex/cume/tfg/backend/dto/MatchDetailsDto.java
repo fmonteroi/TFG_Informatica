@@ -25,6 +25,7 @@ public record MatchDetailsDto(
      * @return the match details DTO.
      */
     public static MatchDetailsDto from(Match match, List<Participation> participations) {
+        // Maps every stored participation into the match response
         return new MatchDetailsDto(
                 match.getMatchId(),
                 match.getQueueId(),

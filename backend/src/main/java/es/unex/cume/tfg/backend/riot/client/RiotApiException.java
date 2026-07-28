@@ -9,6 +9,12 @@ public class RiotApiException extends RuntimeException {
 
     private final HttpStatusCode status;
 
+    /**
+     * Creates an exception from a Riot error response.
+     *
+     * @param message error details
+     * @param status Riot HTTP status
+     */
     public RiotApiException(String message, HttpStatusCode status) {
         super(message);
         this.status = status;

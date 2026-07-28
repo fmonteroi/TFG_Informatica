@@ -1,9 +1,14 @@
 package es.unex.cume.tfg.backend.repository.projection;
 
 import es.unex.cume.tfg.backend.model.Champion;
+import es.unex.cume.tfg.backend.model.Role;
 
+/**
+ * Groups equal builds and their match results for recommendation scoring.
+ */
 public record RecommendedBuildAggregate(
         Champion champion,
+        Role role,
         Integer item0,
         Integer item1,
         Integer item2,

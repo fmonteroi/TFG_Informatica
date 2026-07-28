@@ -12,6 +12,11 @@ public class BaseUrlBuilder {
 
     private final RegionMapper regionMapper;
 
+    /**
+     * Creates the Riot base URL builder.
+     *
+     * @param regionMapper mapper used to get Riot host codes
+     */
     public BaseUrlBuilder(RegionMapper regionMapper) {
         this.regionMapper = regionMapper;
     }

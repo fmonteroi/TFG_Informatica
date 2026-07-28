@@ -28,13 +28,16 @@ public class RestClientConfig {
             throw new IllegalStateException("RIOT_API_KEY is not set.");
         }
 
+        // Creates the HTTP client with a connection timeout
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(defaultIfNull(props.connectTimeout(), Duration.ofSeconds(3)))
                 .build();
 
+        // Adds a read timeout to the Spring request factory
         JdkClientHttpRequestFactory rf = new JdkClientHttpRequestFactory(httpClient);
         rf.setReadTimeout(defaultIfNull(props.readTimeout(), Duration.ofSeconds(5)));
 
+        // Adds Riot authentication and JSON response headers
         return RestClient.builder()
                 .requestFactory(rf)
                 .defaultHeader("X-Riot-Token", props.key())
@@ -42,6 +45,13 @@ public class RestClientConfig {
                 .build();
     }
 
+    /**
+     * Uses a configured duration or its default value.
+     *
+     * @param value configured duration
+     * @param def default duration
+     * @return configured duration or default when null
+     */
     private static Duration defaultIfNull(Duration value, Duration def) {
         if (value != null){
             return value;

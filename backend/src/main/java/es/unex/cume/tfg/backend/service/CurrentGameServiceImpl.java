@@ -22,6 +22,13 @@ public class CurrentGameServiceImpl implements CurrentGameService {
     private final ChampionService championService;
     private final PlayerService playerService;
 
+    /**
+     * Creates the current game service.
+     *
+     * @param riotFetchService Riot data service
+     * @param championService champion service
+     * @param playerService player service
+     */
     public CurrentGameServiceImpl(RiotFetchService riotFetchService,
                                   ChampionService championService,
                                   PlayerService playerService) {
@@ -33,7 +40,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
     /**
      * Finds the current game info for a player.
      *
-     * @param puuid
+     * @param puuid player PUUID
      * @return the current game status DTO.
      */
     @Override
@@ -46,7 +53,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
             throw new PlayerNotFoundException(puuid);
         }
 
-        // Otherwise, fetches current game info from Riot
+        // Gets current game data from Riot
         Player player = optionalPlayer.get();
         Platform platform = player.getPlatform();
         Optional<CurrentGameInfoDto> optionalCurrentGame = riotFetchService.fetchCurrentGame(platform, puuid);
@@ -88,8 +95,8 @@ public class CurrentGameServiceImpl implements CurrentGameService {
     /**
      * Finds the participant with the given PUUID in the current game info.
      *
-     * @param currentGame
-     * @param puuid
+     * @param currentGame current game data
+     * @param puuid player PUUID
      * @return the matching participant, or null.
      */
     private CurrentGameInfoDto.CurrentGameParticipant findParticipantByPuuid(CurrentGameInfoDto currentGame, String puuid) {
@@ -106,7 +113,7 @@ public class CurrentGameServiceImpl implements CurrentGameService {
     /**
      * Resolves the queue name from the queue ID.
      *
-     * @param queueId
+     * @param queueId Riot queue identifier
      * @return the readable queue name.
      */
     private String resolveQueueName(Integer queueId) {

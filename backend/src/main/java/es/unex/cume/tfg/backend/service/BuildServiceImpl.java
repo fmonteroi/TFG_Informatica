@@ -3,6 +3,7 @@ package es.unex.cume.tfg.backend.service;
 import es.unex.cume.tfg.backend.dto.ChampionProBuildDto;
 import es.unex.cume.tfg.backend.dto.ProBuildDto;
 import es.unex.cume.tfg.backend.model.Build;
+import es.unex.cume.tfg.backend.model.Role;
 import es.unex.cume.tfg.backend.repository.BuildRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,12 +17,18 @@ import java.util.Optional;
 @Service
 public class BuildServiceImpl implements BuildService {
 
-    private static final List<Integer> RANKED_QUEUE_IDS = List.of(420, 440);
-
     private final BuildRepository buildRepository;
+    private final RankedDataService rankedDataService;
 
-    public BuildServiceImpl(BuildRepository buildRepository) {
+    /**
+     * Creates the build service.
+     *
+     * @param buildRepository   build repository
+     * @param rankedDataService ranked data service
+     */
+    public BuildServiceImpl(BuildRepository buildRepository, RankedDataService rankedDataService) {
         this.buildRepository = buildRepository;
+        this.rankedDataService = rankedDataService;
     }
 
     /**
@@ -47,32 +54,35 @@ public class BuildServiceImpl implements BuildService {
     }
 
     /**
-     * Finds recent builds used by professional players for a given champion.
-     * Ordered by match date descending.
+     * Finds recent ranked builds used by professional players for a champion and role.
      *
-     * @param championId the champion ID
-     * @param limit      the maximum number of builds to return
-     * @return the list of recent pro builds
+     * @param championId champion identifier
+     * @param role       champion role
+     * @param limit      maximum number of builds to return
+     * @return recent professional builds for the champion and role
      */
     @Override
-    public List<ChampionProBuildDto> findRecentProBuildsByChampionId(Integer championId, int limit) {
-        // Default limit
+    public List<ChampionProBuildDto> findRecentProBuildsByChampionIdAndRole(Integer championId, Role role, int limit) {
         if (limit < 1) {
             limit = 10;
         }
 
-        // Creates a PageRequest to limit the number of results
         PageRequest pageRequest = PageRequest.of(0, limit);
 
-        // Fetches rankeds recent pro build for a champion
-        List<Build> builds = buildRepository.findRecentProBuildsByChampionId(championId, RANKED_QUEUE_IDS, pageRequest);
+        List<Build> builds = buildRepository.findRecentProBuildsByChampionIdAndRole(championId, role, rankedDataService.getQueueIds(), pageRequest);
 
-        // Converts the builds to DTOs and returns them
         return builds.stream()
                 .map(ChampionProBuildDto::fromEntity)
                 .toList();
     }
 
+    /**
+     * Finds a professional player's latest ranked builds.
+     *
+     * @param puuid professional player PUUID
+     * @param limit maximum number of builds
+     * @return latest professional builds
+     */
     @Override
     public List<ProBuildDto> findRecentBuildsByProfessionalPuuid(String puuid, int limit) {
         if (limit < 1) {
@@ -81,7 +91,7 @@ public class BuildServiceImpl implements BuildService {
 
         PageRequest pageRequest = PageRequest.of(0, limit);
 
-        List<Build> builds = buildRepository.findRecentBuildsByProfessionalPuuid(puuid, RANKED_QUEUE_IDS, pageRequest);
+        List<Build> builds = buildRepository.findRecentBuildsByProfessionalPuuid(puuid, rankedDataService.getQueueIds(), pageRequest);
 
         return builds.stream()
                 .map(ProBuildDto::fromEntity)

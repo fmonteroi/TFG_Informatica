@@ -5,6 +5,7 @@ package es.unex.cume.tfg.backend.exception;
  */
 public final class ErrorCode {
 
+    /** Prevents utility class instantiation. */
     private ErrorCode() {
     }
 

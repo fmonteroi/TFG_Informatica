@@ -11,6 +11,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+/**
+ * Client for LEAGUE-V4 endpoints of Riot API.
+ */
 @Component
 public class LeagueClient {
 
@@ -18,13 +21,28 @@ public class LeagueClient {
     private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
+    /**
+     * Creates the Riot league client.
+     *
+     * @param restClient shared REST client
+     * @param baseUrlBuilder Riot URL builder
+     * @param riotErrorHandler Riot error handler
+     */
     public LeagueClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
         this.baseUrlBuilder = baseUrlBuilder;
         this.riotErrorHandler = riotErrorHandler;
     }
 
+    /**
+     * Gets a player's ranked queue results.
+     *
+     * @param platform Riot platform
+     * @param puuid player PUUID
+     * @return ranked queue results
+     */
     public List<LeagueEntryDto> getEntriesByPuuid(Platform platform, String puuid) {
+        // Builds the platform League-V4 URL
         String baseUrl = baseUrlBuilder.buildPlatformBaseUrl(platform);
 
         URI uri = UriComponentsBuilder
@@ -34,6 +52,7 @@ public class LeagueClient {
                 .encode()
                 .toUri();
 
+        // Sends the request and keeps the list element type
         return restClient.get()
                 .uri(uri)
                 .retrieve()

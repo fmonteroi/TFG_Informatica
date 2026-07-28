@@ -11,6 +11,11 @@ import org.springframework.stereotype.Component;
 public class ChampionDataInitializer implements CommandLineRunner {
     private final ChampionService championService;
 
+    /**
+     * Creates the champion catalog initializer.
+     *
+     * @param championService service used to initialize champions
+     */
     public ChampionDataInitializer(ChampionService championService) {
         this.championService = championService;
     }
@@ -22,6 +27,7 @@ public class ChampionDataInitializer implements CommandLineRunner {
      */
     @Override
     public void run(String... args) {
+        // Initializes the local champion catalog
         championService.initChampions();
     }
 }

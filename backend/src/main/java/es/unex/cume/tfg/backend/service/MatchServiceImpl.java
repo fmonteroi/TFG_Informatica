@@ -26,6 +26,13 @@ public class MatchServiceImpl implements MatchService {
     private final ParticipationService participationService;
     private final RiotFetchService riotFetchService;
 
+    /**
+     * Creates the match service.
+     *
+     * @param matchRepository match repository
+     * @param participationService participation service
+     * @param riotFetchService Riot data service
+     */
     public MatchServiceImpl(MatchRepository matchRepository,
                             ParticipationService participationService,
                             RiotFetchService riotFetchService) {
@@ -54,7 +61,7 @@ public class MatchServiceImpl implements MatchService {
     /**
      * Finds the details of a match by its ID.
      *
-     * @param matchId
+     * @param matchId Riot match identifier
      * @return the match details DTO.
      */
     @Override
@@ -65,7 +72,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Fetches recent matches from Riot API by PUUID and saves them in the database.
+     * Gets recent matches from Riot API by PUUID and saves them in the database.
      * Delegates to loadMatchesSince with null timestamp.
      *
      * @param platform the platform/region
@@ -79,7 +86,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Fetches matches from Riot API since a given timestamp and saves them in the database.
+     * Gets matches from Riot API since a given timestamp and saves them in the database.
      * Used for periodic updates to fetch new matches since the last update.
      *
      * @param platform  the platform/region
@@ -101,7 +108,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     /**
-     * Fetches all matches from Riot API since a given date, paginating automatically.
+     * Gets all matches from Riot API since a given date, paginating automatically.
      * Used when creating a new player to load their full match history.
      *
      * Note: Unused because development api kay has very low rate limits. Used for more than 100 matches.

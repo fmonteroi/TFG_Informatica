@@ -6,6 +6,7 @@ import es.unex.cume.tfg.backend.model.Match;
 import es.unex.cume.tfg.backend.model.Participation;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.model.Professional;
+import es.unex.cume.tfg.backend.model.Role;
 
 import java.time.Instant;
 
@@ -19,12 +20,13 @@ public record ChampionProBuildDto(
         Integer queueId,
         Integer championId,
         String championName,
+        String puuid,
         String proName,
         String gameName,
         String tagLine,
         String teamName,
         String league,
-        String teamPosition,
+        Role teamPosition,
         BuildDto build
 ) {
     /**
@@ -34,6 +36,7 @@ public record ChampionProBuildDto(
      * @return the professional build DTO.
      */
     public static ChampionProBuildDto fromEntity(Build build) {
+        // Gets the related match, champion and professional data
         Participation participation = build.getParticipation();
         Match match = participation.getMatch();
         Champion champion = participation.getChampion();
@@ -47,6 +50,7 @@ public record ChampionProBuildDto(
                 match.getQueueId(),
                 champion.getChampionId(),
                 champion.getChampionName(),
+                player.getPuuid(),
                 professional.getProName(),
                 player.getGameName(),
                 player.getTagLine(),

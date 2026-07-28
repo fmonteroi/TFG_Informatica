@@ -24,14 +24,25 @@ function ItemTooltip({
         )
     }
 
-    const itemInfo = itemInfoMap?.get(itemId) ?? null
-    const imageUrl = itemInfo?.imageUrl ?? `/dragontail/img/item/${itemId}.png`
+    let itemInfo = null
+
+    if (itemInfoMap) {
+        itemInfo = itemInfoMap.get(itemId) ?? null
+    }
+
+    let imageUrl = `/dragontail/img/item/${itemId}.png`
+    let imageAlt = `Item ${itemId}`
+
+    if (itemInfo) {
+        imageUrl = itemInfo.imageUrl
+        imageAlt = itemInfo.name
+    }
 
     return (
         <div className="group relative">
             <img
                 src={imageUrl}
-                alt={itemInfo?.name ?? `Item ${itemId}`}
+                alt={imageAlt}
                 className={`${sizeClassName} ${roundedClassName} shrink-0`}
             />
 

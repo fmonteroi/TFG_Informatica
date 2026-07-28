@@ -1,125 +1,179 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.model.Match;
 import es.unex.cume.tfg.backend.model.RecommendedBuild;
+import es.unex.cume.tfg.backend.model.Role;
 import es.unex.cume.tfg.backend.repository.BuildRepository;
-import es.unex.cume.tfg.backend.repository.MatchRepository;
+import es.unex.cume.tfg.backend.repository.ParticipationRepository;
 import es.unex.cume.tfg.backend.repository.RecommendedBuildRepository;
+import es.unex.cume.tfg.backend.repository.projection.ChampionRoleGamesAggregate;
 import es.unex.cume.tfg.backend.repository.projection.RecommendedBuildAggregate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
+/**
+ * Calculates champion build recommendations from ranked match data.
+ */
 @Service
 public class RecommendedBuildServiceImpl implements RecommendedBuildService {
 
-    private static final List<Integer> RANKED_QUEUE_IDS = List.of(420, 440); // Ranked Solo/Duo and Ranked Flex
+    private static final long MIN_GAMES_PLAYED = 10;
     private static final double PICK_RATE_WEIGHT = 0.4;
     private static final double WIN_RATE_WEIGHT = 0.6;
 
     private final BuildRepository buildRepository;
+    private final ParticipationRepository participationRepository;
     private final RecommendedBuildRepository recommendedBuildRepository;
-    private final MatchRepository matchRepository;
+    private final RankedDataService rankedDataService;
 
-    public RecommendedBuildServiceImpl(BuildRepository buildRepository, RecommendedBuildRepository recommendedBuildRepository, MatchRepository matchRepository) {
+    /**
+     * Creates the recommended build service.
+     *
+     * @param buildRepository            build repository
+     * @param participationRepository    participation repository
+     * @param recommendedBuildRepository recommendation repository
+     * @param rankedDataService          ranked data service
+     */
+    public RecommendedBuildServiceImpl(BuildRepository buildRepository, ParticipationRepository participationRepository, RecommendedBuildRepository recommendedBuildRepository, RankedDataService rankedDataService) {
         this.buildRepository = buildRepository;
+        this.participationRepository = participationRepository;
         this.recommendedBuildRepository = recommendedBuildRepository;
-        this.matchRepository = matchRepository;
+        this.rankedDataService = rankedDataService;
     }
 
+    /**
+     * Recalculates the best build for each champion and role on the current patch.
+     *
+     * @return saved build recommendations
+     */
     @Override
     @Transactional
     public List<RecommendedBuild> calculateAllRecommendedBuilds() {
 
-        Optional<Match> optionalLatestMatch = matchRepository.findFirstByQueueIdInOrderByGameStartAtDesc(RANKED_QUEUE_IDS);
-        if (optionalLatestMatch.isEmpty()) {
-            return List.of();
-        }
-        Match latestMatch = optionalLatestMatch.get();
-        String currentPatch = extractPatch(latestMatch.getGameVersion());
+        // Uses the latest ranked match to find the current data patch
+        Optional<String> optionalCurrentPatch = rankedDataService.findLatestPatch();
 
-        if (currentPatch == null) {
+        // If no ranked matches are found, no recommendations can be calculated
+        if (optionalCurrentPatch.isEmpty()) {
             return List.of();
         }
 
-        List<RecommendedBuildAggregate> aggregates = buildRepository.aggregateRankedBuilds(RANKED_QUEUE_IDS, currentPatch);
+        String currentPatch = optionalCurrentPatch.get();
+        List<Integer> rankedQueueIds = rankedDataService.getQueueIds();
 
-        Map<Integer, Long> totalGamesByChampion = calculateTotalGamesByChampion(aggregates);
+        // Counts all ranked games played by each champion and role
+        List<ChampionRoleGamesAggregate> roleGames = participationRepository.aggregateGamesByChampionAndRole(rankedQueueIds, currentPatch);
 
-        Map<Integer, RecommendedBuildAggregate> bestByChampion = findBestBuilds(aggregates, totalGamesByChampion);
+        Map<ChampionRoleKey, Long> gamesByChampionAndRole = getGamesByChampionAndRole(roleGames);
 
-        Map<Integer, RecommendedBuild> existingBuilds = findExistingBuilds();
+        // Groups complete builds and their match results
+        List<RecommendedBuildAggregate> buildAggregates = buildRepository.aggregateRankedBuilds(rankedQueueIds, currentPatch);
 
-        List<RecommendedBuild> recommendedBuilds = new ArrayList<>();
+        // Selects one weighted recommendation for each champion and role
+        Map<ChampionRoleKey, RecommendedBuildAggregate> bestBuilds = findBestBuilds(buildAggregates, gamesByChampionAndRole);
 
-        for (RecommendedBuildAggregate aggregate : bestByChampion.values()) {
+        // Reuses current recommendations and keeps old ones for later removal
+        Map<ChampionRoleKey, RecommendedBuild> existingBuilds = findExistingBuilds();
+        List<RecommendedBuild> currentRecommendations = new ArrayList<>();
 
+        // Updates or creates recommendations for each champion and role
+        for (RecommendedBuildAggregate aggregate : bestBuilds.values()) {
             Integer championId = aggregate.champion().getChampionId();
 
-            RecommendedBuild recommendedBuild = existingBuilds.get(championId);
+            ChampionRoleKey key = new ChampionRoleKey(championId, aggregate.role());
+
+            // Removes and reuses the existing recommendation
+            RecommendedBuild recommendedBuild = existingBuilds.remove(key);
 
             if (recommendedBuild == null) {
                 recommendedBuild = new RecommendedBuild();
-                recommendedBuild.setChampion(aggregate.champion());
             }
+
+            recommendedBuild.setChampion(aggregate.champion());
+            recommendedBuild.setRole(aggregate.role());
+            recommendedBuild.setRoleGames(gamesByChampionAndRole.get(key));
+
             copyBuild(aggregate, recommendedBuild);
-            aggregate.champion().setRecommendedBuild(recommendedBuild);
 
-            recommendedBuilds.add(recommendedBuild);
+            currentRecommendations.add(recommendedBuild);
         }
 
-        return recommendedBuildRepository.saveAll(recommendedBuilds);
+        // Removes recommendations that were not calculated for the current patch
+        recommendedBuildRepository.deleteAll(existingBuilds.values());
+
+        return recommendedBuildRepository.saveAll(currentRecommendations);
     }
 
+    /**
+     * Finds all recommendations for one champion.
+     *
+     * @param championId champion identifier
+     * @return recommendations grouped by role
+     */
     @Override
-    public Optional<RecommendedBuild> findByChampionId(Integer championId) {
-        return recommendedBuildRepository.findById(championId);
+    public List<RecommendedBuild> findByChampionId(Integer championId) {
+        return recommendedBuildRepository.findByChampionChampionIdOrderByRoleGamesDesc(championId);
     }
 
-    private Map<Integer, Long> calculateTotalGamesByChampion(List<RecommendedBuildAggregate> aggregates) {
-        Map<Integer, Long> totals = new HashMap<>();
+    /**
+     * Maps the number of games played by each champion and role.
+     *
+     * @param aggregates grouped champion role games
+     * @return games mapped by champion and role
+     */
+    private Map<ChampionRoleKey, Long> getGamesByChampionAndRole(List<ChampionRoleGamesAggregate> aggregates) {
+        Map<ChampionRoleKey, Long> games = new HashMap<>();
+
+        for (ChampionRoleGamesAggregate aggregate : aggregates) {
+            Integer championId = aggregate.champion().getChampionId();
+            ChampionRoleKey key = new ChampionRoleKey(championId, aggregate.role());
+
+            games.put(key, aggregate.gamesPlayed());
+        }
+
+        return games;
+    }
+
+    /**
+     * Finds the highest scoring build for each champion and role.
+     *
+     * @param aggregates             grouped build results
+     * @param gamesByChampionAndRole games played by each champion and role
+     * @return best grouped build by champion and role
+     */
+    private Map<ChampionRoleKey, RecommendedBuildAggregate> findBestBuilds(List<RecommendedBuildAggregate> aggregates, Map<ChampionRoleKey, Long> gamesByChampionAndRole) {
+        Map<ChampionRoleKey, RecommendedBuildAggregate> bestBuilds = new HashMap<>();
+        Map<ChampionRoleKey, Double> bestScores = new HashMap<>();
 
         for (RecommendedBuildAggregate aggregate : aggregates) {
             Integer championId = aggregate.champion().getChampionId();
+            ChampionRoleKey key = new ChampionRoleKey(championId, aggregate.role());
 
-            Long currentTotal = totals.get(championId);
+            Long totalGames = gamesByChampionAndRole.get(key);
 
-            if (currentTotal == null) {
-                currentTotal = 0L;
+            if (totalGames == null || totalGames < MIN_GAMES_PLAYED) {
+                continue;
             }
 
-            totals.put(championId, currentTotal + aggregate.gamesPlayed());
-        }
-
-        return totals;
-    }
-
-    private Map<Integer, RecommendedBuildAggregate> findBestBuilds(List<RecommendedBuildAggregate> aggregates, Map<Integer, Long> totalGamesByChampion) {
-        Map<Integer, RecommendedBuildAggregate> bestBuilds = new HashMap<>();
-
-        Map<Integer, Double> bestScores = new HashMap<>();
-
-        for (RecommendedBuildAggregate aggregate : aggregates) {
-            Integer championId = aggregate.champion().getChampionId();
-
-            long totalGames = totalGamesByChampion.get(championId);
             double pickRate = calculateRate(aggregate.gamesPlayed(), totalGames);
+
             double winRate = calculateRate(aggregate.wins(), aggregate.gamesPlayed());
 
+            // Combines pick rate and win rate using configurable weights
             double score = PICK_RATE_WEIGHT * pickRate + WIN_RATE_WEIGHT * winRate;
 
-            Double bestScore = bestScores.get(championId);
+            Double bestScore = bestScores.get(key);
 
             if (bestScore == null || score > bestScore) {
-                bestScores.put(championId, score);
-                bestBuilds.put(championId, aggregate);
+                bestScores.put(key, score);
+                bestBuilds.put(key, aggregate);
             } else if (score == bestScore) {
-                RecommendedBuildAggregate currentBest = bestBuilds.get(championId);
+                RecommendedBuildAggregate currentBest = bestBuilds.get(key);
 
                 if (aggregate.gamesPlayed() > currentBest.gamesPlayed()) {
-                    bestBuilds.put(championId, aggregate);
-                    bestScores.put(championId, score);
+                    bestScores.put(key, score);
+                    bestBuilds.put(key, aggregate);
                 }
             }
         }
@@ -127,6 +181,13 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
         return bestBuilds;
     }
 
+    /**
+     * Calculates a ratio.
+     *
+     * @param value matching amount
+     * @param total total amount
+     * @return calculated ratio
+     */
     private double calculateRate(long value, long total) {
         if (total == 0) {
             return 0.0;
@@ -135,18 +196,32 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
         return (double) value / total;
     }
 
-    private Map<Integer, RecommendedBuild> findExistingBuilds() {
+    /**
+     * Maps stored recommendations by champion and role.
+     *
+     * @return stored recommendations by champion and role
+     */
+    private Map<ChampionRoleKey, RecommendedBuild> findExistingBuilds() {
         List<RecommendedBuild> existingBuilds = recommendedBuildRepository.findAll();
 
-        Map<Integer, RecommendedBuild> buildsByChampion = new HashMap<>();
+        Map<ChampionRoleKey, RecommendedBuild> buildsByChampionAndRole = new HashMap<>();
 
         for (RecommendedBuild build : existingBuilds) {
-            buildsByChampion.put(build.getChampionId(), build);
+            Integer championId = build.getChampion().getChampionId();
+            ChampionRoleKey key = new ChampionRoleKey(championId, build.getRole());
+
+            buildsByChampionAndRole.put(key, build);
         }
 
-        return buildsByChampion;
+        return buildsByChampionAndRole;
     }
 
+    /**
+     * Copies build fields from a grouped result into an entity.
+     *
+     * @param original grouped build result
+     * @param copy     recommendation entity to update
+     */
     private void copyBuild(RecommendedBuildAggregate original, RecommendedBuild copy) {
         copy.setItem0(original.item0());
         copy.setItem1(original.item1());
@@ -160,18 +235,16 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
         copy.setSummoner2Id(original.summoner2Id());
     }
 
-    private String extractPatch(String gameVersion) {
-        if (gameVersion == null || gameVersion.isBlank()) {
-            return null;
-        }
-
-        String[] parts = gameVersion.split("\\.");
-
-        if (parts.length < 2) {
-            return null;
-        }
-
-        return parts[0] + "." + parts[1];
+    /**
+     * Identifies one champion and role combination.
+     *
+     * @param championId champion identifier
+     * @param role       champion role
+     */
+    private record ChampionRoleKey(
+            Integer championId,
+            Role role
+    ) {
     }
 
 }

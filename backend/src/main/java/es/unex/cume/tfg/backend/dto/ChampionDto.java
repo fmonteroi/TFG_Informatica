@@ -1,13 +1,15 @@
 package es.unex.cume.tfg.backend.dto;
 
 import es.unex.cume.tfg.backend.model.Champion;
+import es.unex.cume.tfg.backend.model.Tier;
 
 /**
  * DTO that exposes champion catalog data.
  */
 public record ChampionDto(
         Integer championId,
-        String championName
+        String championName,
+        Tier tier
 ) {
 
     /**
@@ -17,9 +19,16 @@ public record ChampionDto(
      * @return the champion DTO.
      */
     public static ChampionDto fromEntity(Champion champion) {
+        Tier tier = null;
+
+        if (champion.getStats() != null) {
+            tier = champion.getStats().getTier();
+        }
+
         return new ChampionDto(
                 champion.getChampionId(),
-                champion.getChampionName()
+                champion.getChampionName(),
+                tier
         );
     }
 }

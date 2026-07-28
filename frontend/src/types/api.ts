@@ -13,9 +13,12 @@ export interface BuildDto {
     summoner2Id: number | null
 }
 
+export type Tier = 'S' | 'A' | 'B' | 'C' | 'D' | 'E'
+
 export interface ChampionDto {
     championId: number
     championName: string
+    tier: Tier | null
 }
 
 export interface ChampionStatsDto {
@@ -80,7 +83,7 @@ export interface ParticipationDto {
     deaths: number
     assists: number
     gameStartAt: string
-    teamPosition: string
+    teamPosition: Role | null
     build: BuildDto | null
 }
 
@@ -117,28 +120,38 @@ export interface ChampionProBuildDto {
     queueId: number
     championId: number
     championName: string
+    puuid: string
     proName: string
     gameName: string
     tagLine: string
     teamName: string
     league: string
-    teamPosition: string
+    teamPosition: Role | null
     build: BuildDto
+}
+
+export interface ChampionRoleBuildsDto {
+    role: Role
+    recommendedBuild: RecommendedBuildDto
+    recentProBuilds: ChampionProBuildDto[]
 }
 
 export interface ChampionDetailsDto {
     championId: number
     championName: string
+    tier: Tier | null
     stats: ChampionStatsDto | null
-    recommendedBuild: RecommendedBuildDto | null
-    recentProBuilds: ChampionProBuildDto[]
+    roleBuilds: ChampionRoleBuildsDto[]
 }
+
+export type Role = 'TOP' | 'JUNGLE' | 'MIDDLE' | 'BOTTOM' | 'SUPPORT'
 
 export interface ProfessionalDto {
     puuid: string
     proName: string
     teamName: string
     league: string
+    role: Role
 }
 
 export interface ProBuildDto {
@@ -148,7 +161,7 @@ export interface ProBuildDto {
     queueId: number
     championId: number
     championName: string
-    teamPosition: string
+    teamPosition: Role | null
     build: BuildDto
 }
 
@@ -157,6 +170,7 @@ export interface ProfessionalDetailsDto {
     proName: string
     teamName: string
     league: string
+    role: Role
     gameName: string
     tagLine: string
     platform: string

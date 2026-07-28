@@ -1,4 +1,5 @@
 import type { RankedRankDto } from '../../types/api'
+import { formatRank, rankEmblemUrl } from '../../lib/lol'
 
 type RankCardProps = {
     title: string
@@ -7,39 +8,63 @@ type RankCardProps = {
 
 function rankWinRate(rank: RankedRankDto) {
     const games = rank.wins + rank.losses
-    return games === 0 ? 0 : (rank.wins / games) * 100
+
+    if (games === 0) {
+        return 0
+    } else {
+        return (rank.wins / games) * 100
+    }
 }
 
 function RankCard({ title, rank }: RankCardProps) {
+    let rankContent
+
+    if (rank) {
+        rankContent = (
+            <>
+                <div className="mt-3 flex items-center gap-3">
+                    <img
+                        src={rankEmblemUrl(rank.tier)}
+                        alt={`Emblema de ${formatRank(rank.tier)}`}
+                        className="h-16 w-16 shrink-0 object-contain"
+                    />
+
+                    <div className="min-w-0 flex-1">
+                        <p className="text-lg font-bold text-slate-100">
+                            {formatRank(rank.tier)} {rank.rank}
+                        </p>
+
+                        <div className="mt-1 flex items-center justify-between gap-2">
+                            <p className="text-sm text-cyan-300">
+                                {rank.leaguePoints} LP
+                            </p>
+
+                            <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
+                                {rankWinRate(rank).toFixed(1)}% WR
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-4 flex gap-4 border-t border-slate-800 pt-3 text-sm">
+                    <span className="text-emerald-300">{rank.wins} victorias</span>
+                    <span className="text-rose-300">{rank.losses} derrotas</span>
+                </div>
+            </>
+        )
+    } else {
+        rankContent = (
+            <p className="mt-3 text-sm text-slate-400">
+                Sin clasificación disponible.
+            </p>
+        )
+    }
+
     return (
         <section className="rounded-lg border border-slate-800 bg-slate-900 p-4">
             <p className="text-xs font-semibold uppercase text-slate-500">{title}</p>
 
-            {rank ? (
-                <>
-                    <div className="mt-3 flex items-end justify-between gap-3">
-                        <div>
-                            <p className="text-xl font-bold capitalize text-slate-100">
-                                {rank.tier.toLowerCase()} {rank.rank}
-                            </p>
-                            <p className="mt-1 text-sm text-cyan-300">
-                                {rank.leaguePoints} LP
-                            </p>
-                        </div>
-
-                        <span className="rounded-md bg-slate-800 px-2 py-1 text-xs text-slate-300">
-                            {rankWinRate(rank).toFixed(1)}% WR
-                        </span>
-                    </div>
-
-                    <div className="mt-4 flex gap-4 border-t border-slate-800 pt-3 text-sm">
-                        <span className="text-emerald-300">{rank.wins} victorias</span>
-                        <span className="text-rose-300">{rank.losses} derrotas</span>
-                    </div>
-                </>
-            ) : (
-                <p className="mt-3 text-sm text-slate-400">Sin clasificación disponible.</p>
-            )}
+            {rankContent}
         </section>
     )
 }

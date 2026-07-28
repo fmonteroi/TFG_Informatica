@@ -27,10 +27,7 @@ public class PlayerController {
     private final CurrentGameService currentGameService;
     private final RankedRankService rankedRankService;
 
-    public PlayerController(PlayerService playerService,
-                            ParticipationService participationService,
-                            CurrentGameService currentGameService,
-                            RankedRankService rankedRankService) {
+    public PlayerController(PlayerService playerService, ParticipationService participationService, CurrentGameService currentGameService, RankedRankService rankedRankService) {
         this.playerService = playerService;
         this.participationService = participationService;
         this.currentGameService = currentGameService;
@@ -48,14 +45,12 @@ public class PlayerController {
      */
     @GetMapping("/search")
     public ResponseEntity<PlayerDetailsDto> searchPlayer(@RequestParam Platform platform, @RequestParam String gameName, @RequestParam String tagLine) {
-        // Searches player
         Player player = playerService.searchPlayer(platform, gameName, tagLine);
 
         List<Participation> participations = participationService.findByPuuid(player.getPuuid());
 
         List<RankedRank> rankedRanks = rankedRankService.findByPuuid(player.getPuuid());
 
-        // Returns player with participations
         return ResponseEntity.ok(PlayerDetailsDto.from(player, rankedRanks, participations));
     }
 
@@ -69,7 +64,6 @@ public class PlayerController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<PlayerDetailsDto> refreshPlayer(@RequestParam Platform platform, @RequestParam String puuid) {
-        // Refreshes player data
         Player player = playerService.refreshPlayer(platform, puuid);
 
         List<Participation> participations = participationService.findByPuuid(player.getPuuid());

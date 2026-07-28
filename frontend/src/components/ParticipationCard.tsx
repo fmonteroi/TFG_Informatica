@@ -52,6 +52,33 @@ function ParticipationCard({
                                onToggle,
                                children,
                            }: ParticipationCardProps) {
+    let championIconContent
+
+    if (championIcon) {
+        championIconContent = (
+            <img
+                src={championIcon}
+                alt={championName ?? 'Champion'}
+                className="h-20 w-20 rounded-2xl"
+            />
+        )
+    } else {
+        championIconContent = (
+            <div
+                role="img"
+                aria-label="Icono de campeón no disponible"
+                className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"
+            />
+        )
+    }
+
+    let toggleButtonLabel = 'Mostrar detalle'
+    let toggleIconClass = 'rotate-0'
+
+    if (expanded) {
+        toggleButtonLabel = 'Ocultar detalle'
+        toggleIconClass = 'rotate-180'
+    }
 
     return (
         <article
@@ -68,21 +95,9 @@ function ParticipationCard({
 
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                     <div className="flex min-w-0 items-start gap-4">
-                        {championIcon ? (
-                            <img
-                                src={championIcon}
-                                alt={championName ?? 'Champion'}
-                                className="h-20 w-20 rounded-2xl"
-                            />
-                        ) : (
-                            <div
-                                role="img"
-                                aria-label="Icono de campeón no disponible"
-                                className="h-20 w-20 rounded-2xl border border-slate-700 bg-slate-800"
-                            />
-                        )}
+                        {championIconContent}
 
-                        <div className="flex min-w-0 flex-wrap items-center gap-4">
+                        <div className="flex min-w-0 flex-wrap items-center gap-8">
                             <div className="min-w-0">
                                 <p className="text-2xl font-bold text-slate-50">
                                     {championName}
@@ -95,7 +110,11 @@ function ParticipationCard({
 
                             <div className="flex gap-2">
                                 {spellIds.map((spellId, index) => {
-                                    const spellIcon = spellId && spellMap ? spellMap.get(spellId) : null
+                                    let spellIcon = null
+
+                                    if (spellId != null && spellMap != null) {
+                                        spellIcon = spellMap.get(spellId)
+                                    }
 
                                     if (!spellIcon) {
                                         return (
@@ -163,7 +182,7 @@ function ParticipationCard({
                             onClick={onToggle}
                             className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950/80 text-slate-100 transition hover:bg-slate-900"
                             aria-expanded={expanded}
-                            aria-label={expanded ? 'Ocultar detalle' : 'Mostrar detalle'}
+                            aria-label={toggleButtonLabel}
                         >
                             <svg
                                 viewBox="0 0 20 20"
@@ -171,7 +190,7 @@ function ParticipationCard({
                                 aria-hidden="true"
                                 className={[
                                     'h-6 w-6 transition-transform duration-200',
-                                    expanded ? 'rotate-180' : 'rotate-0',
+                                    toggleIconClass,
                                 ].join(' ')}
                             >
                                 <path

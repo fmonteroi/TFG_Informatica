@@ -2,6 +2,8 @@ package es.unex.cume.tfg.backend.repository;
 
 import es.unex.cume.tfg.backend.model.Match;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,5 +28,26 @@ public interface MatchRepository extends JpaRepository<Match, String> {
      */
     boolean existsByMatchId(String matchId);
 
+    /**
+     * Finds the latest stored match from the given queues.
+     *
+     * @param queueIds queue identifiers
+     * @return latest matching match when available
+     */
     Optional<Match> findFirstByQueueIdInOrderByGameStartAtDesc(List<Integer> queueIds);
+
+    /**
+     * Counts stored ranked matches from the given patch.
+     *
+     * @param queueIds ranked queue identifiers
+     * @param patch game patch to include
+     * @return number of matching ranked matches
+     */
+    @Query("""
+    SELECT COUNT(m)
+    FROM Match m
+    WHERE m.queueId IN :queueIds
+    AND m.gameVersion LIKE CONCAT(:patch, '.%')
+    """)
+    long countRankedMatchesByPatch(@Param("queueIds") List<Integer> queueIds, @Param("patch") String patch);
 }

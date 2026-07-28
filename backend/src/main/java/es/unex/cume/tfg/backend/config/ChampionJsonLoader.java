@@ -28,7 +28,9 @@ public class ChampionJsonLoader {
      * @return the champion seeds.
      */
     public List<ChampionSeed> loadChampionSeeds() {
-        try (InputStream inputStream = new ClassPathResource("static/champion.json").getInputStream()) {
+        // Opens the champion catalog resource
+        try (InputStream inputStream = new ClassPathResource("data/champion.json").getInputStream()) {
+            // Maps the JSON content into its internal structure
             ChampionJsonFile championJsonFile = objectMapper.readValue(inputStream, ChampionJsonFile.class);
 
             if (championJsonFile == null || championJsonFile.data() == null || championJsonFile.data().isEmpty()) {
@@ -37,6 +39,7 @@ public class ChampionJsonLoader {
 
             List<ChampionSeed> championSeeds = new ArrayList<>();
 
+            // Converts each JSON champion into an initialization entry
             for (ChampionJsonData championJsonData : championJsonFile.data().values()) {
                 Integer championId = Integer.valueOf(championJsonData.key());
                 String championName = championJsonData.name();

@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getAllChampions } from '../api/backendApi'
 import { useDragontailAssets } from '../lib/dragontail'
-import type { ChampionDto } from '../types/api'
+import type { ChampionDto, Tier } from '../types/api'
 import { safeError } from '../lib/errors'
 import { CARD_CLASS } from '../lib/constants'
+import ChampionTierSection from '../components/champions/ChampionTierSection'
+
+const TIER_ORDER: Tier[] = ['S', 'A', 'B', 'C', 'D', 'E']
 
 function Champions() {
     const navigate = useNavigate()
@@ -56,6 +59,37 @@ function Champions() {
         )
     }, [champions, searchTerm])
 
+    const championsByTier = useMemo(() => {
+        const grouped = new Map<Tier, ChampionDto[]>()
+
+        for (const tier of TIER_ORDER) {
+            grouped.set(tier, [])
+        }
+
+        for (const champion of filteredChampions) {
+            let tier = champion.tier
+
+            // Uses C while the backend has not calculated a tier yet
+            if (tier == null) {
+                tier = 'C'
+            }
+
+            const tierChampions = grouped.get(tier)
+
+            if (tierChampions) {
+                tierChampions.push(champion)
+            }
+        }
+
+        for (const tierChampions of grouped.values()) {
+            tierChampions.sort((first, second) =>
+                first.championName.localeCompare(second.championName),
+            )
+        }
+
+        return grouped
+    }, [filteredChampions])
+
     function openChampion(championId: number) {
         navigate(`/campeones/${championId}`)
     }
@@ -67,6 +101,19 @@ function Champions() {
             openChampion(filteredChampions[0].championId)
         }
     }
+
+    const catalogContent = (
+        <div className="space-y-5">
+            {TIER_ORDER.map((tier) => (
+                <ChampionTierSection
+                    key={tier}
+                    tier={tier}
+                    champions={championsByTier.get(tier) || []}
+                    championMap={championMap}
+                />
+            ))}
+        </div>
+    )
 
     return (
         <div className="space-y-7">
@@ -92,53 +139,12 @@ function Champions() {
 
             {error && <section className={CARD_CLASS}>Error: {error}</section>}
 
-            {loading ? (
-                <section className={CARD_CLASS}>Cargando campeones...</section>
-            ) : (
-                <section>
-                    <div className="mb-4 flex items-center justify-between">
-                        <h2 className="text-lg font-bold">Todos los campeones</h2>
-                        <span className="text-sm text-slate-400">
-                            {filteredChampions.length} resultados
-                        </span>
-                    </div>
+            {loading && <section className={CARD_CLASS}>Cargando campeones...</section>}
 
-                    {filteredChampions.length === 0 ? (
-                        <div className={CARD_CLASS}>No hay coincidencias.</div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-                            {filteredChampions.map((champion) => {
-                                const icon = championMap?.get(champion.championId) ?? null
-
-                                return (
-                                    <button
-                                        key={champion.championId}
-                                        type="button"
-                                        onClick={() => openChampion(champion.championId)}
-                                        className="rounded-lg border border-slate-800 bg-slate-900 p-3 text-center transition hover:-translate-y-0.5 hover:border-cyan-300/50"
-                                    >
-                                        {icon ? (
-                                            <img
-                                                src={icon}
-                                                alt={`Icono de ${champion.championName}`}
-                                                className="mx-auto h-16 w-16 rounded-lg"
-                                            />
-                                        ) : (
-                                            <div
-                                                role="img"
-                                                aria-label="Icono de campeón no disponible"
-                                                className="mx-auto h-16 w-16 rounded-lg bg-slate-800"
-                                            />
-                                        )}
-                                        <p className="mt-2 truncate text-sm font-medium">
-                                            {champion.championName}
-                                        </p>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    )}
-                </section>
+            {!loading && !error && (
+                <>
+                    {catalogContent}
+                </>
             )}
         </div>
     )

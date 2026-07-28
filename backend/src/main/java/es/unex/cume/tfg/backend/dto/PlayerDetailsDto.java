@@ -15,13 +15,23 @@ public record PlayerDetailsDto(
         List<RankedRankDto> rankedRanks,
         List<ParticipationDto> participations
 ) {
+    /**
+     * Creates a complete player response from profile, rank and history data.
+     *
+     * @param player player profile
+     * @param rankedRanks current ranked results
+     * @param participations stored match history
+     * @return complete player details
+     */
     public static PlayerDetailsDto from(Player player, List<RankedRank> rankedRanks, List<Participation> participations) {
+        // Maps optional calculated statistics
         PlayerStatsDto statsDto = null;
 
         if (player.getStats() != null) {
             statsDto = PlayerStatsDto.fromEntity(player.getStats());
         }
 
+        // Groups profile, ranks and match history in one response
         return new PlayerDetailsDto(PlayerDto.fromEntity(player), statsDto,
                 rankedRanks.stream()
                         .map(RankedRankDto::fromEntity)

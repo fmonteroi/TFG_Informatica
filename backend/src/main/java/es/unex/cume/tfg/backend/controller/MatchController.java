@@ -19,6 +19,11 @@ public class MatchController {
 
     private final MatchService matchService;
 
+    /**
+     * Creates the match controller.
+     *
+     * @param matchService service used to retrieve match information
+     */
     public MatchController(MatchService matchService) {
         this.matchService = matchService;
     }

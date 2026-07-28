@@ -4,6 +4,7 @@ import es.unex.cume.tfg.backend.model.Build;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.model.Participation;
 import es.unex.cume.tfg.backend.model.Player;
+import es.unex.cume.tfg.backend.model.Role;
 
 import java.time.Instant;
 
@@ -25,7 +26,7 @@ public record ParticipationDto(
         Integer deaths,
         Integer assists,
         Instant gameStartAt,
-        String teamPosition,
+        Role teamPosition,
         BuildDto build
 ) {
     /**
@@ -35,6 +36,7 @@ public record ParticipationDto(
      * @return the participation DTO.
      */
     public static ParticipationDto fromEntity(Participation participation) {
+        // Gets the related entities used by the response
         Player player = participation.getPlayer();
         Champion champion = participation.getChampion();
         Build build = participation.getBuild();

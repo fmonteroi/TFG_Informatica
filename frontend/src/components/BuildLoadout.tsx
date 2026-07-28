@@ -31,23 +31,31 @@ function BuildLoadout({
                 <p className="mb-2 text-xs font-semibold uppercase text-slate-500">Hechizos</p>
                 <div className="flex gap-2">
                     {spellIds.map((spellId, index) => {
-                        const icon = spellId ? spellMap?.get(spellId) : null
+                        let icon = null
 
-                        return icon ? (
-                            <img
-                                key={`${spellId}-${index}`}
-                                src={icon}
-                                alt={`Hechizo de invocador ${spellId}`}
-                                className="h-11 w-11 rounded-lg"
-                            />
-                        ) : (
-                            <div
-                                key={`empty-spell-${index}`}
-                                role="img"
-                                aria-label="Hechizo no disponible"
-                                className="h-11 w-11 rounded-lg border border-slate-700 bg-slate-800"
-                            />
-                        )
+                        if (spellId != null && spellMap != null) {
+                            icon = spellMap.get(spellId)
+                        }
+
+                        if (icon) {
+                            return (
+                                <img
+                                    key={`${spellId}-${index}`}
+                                    src={icon}
+                                    alt={`Hechizo de invocador ${spellId}`}
+                                    className="h-11 w-11 rounded-lg"
+                                />
+                            )
+                        } else {
+                            return (
+                                <div
+                                    key={`empty-spell-${index}`}
+                                    role="img"
+                                    aria-label="Hechizo no disponible"
+                                    className="h-11 w-11 rounded-lg border border-slate-700 bg-slate-800"
+                                />
+                            )
+                        }
                     })}
                 </div>
             </div>

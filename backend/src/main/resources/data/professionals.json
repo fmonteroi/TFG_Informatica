@@ -1,0 +1,483 @@
+[
+  {
+    "code": "elyoya",
+    "platform": "EUW1",
+    "proName": "Elyoya",
+    "gameName": "komanche uchiha",
+    "tagLine": "elite",
+    "teamName": "KOI",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "alvaro",
+    "platform": "EUW1",
+    "proName": "Alvaro",
+    "gameName": "alvarooo",
+    "tagLine": "000",
+    "teamName": "KOI",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "supa",
+    "platform": "EUW1",
+    "proName": "Supa",
+    "gameName": "tukaan",
+    "tagLine": "tukan",
+    "teamName": "KOI",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "myrwn",
+    "platform": "EUW1",
+    "proName": "Myrwn",
+    "gameName": "denji",
+    "tagLine": "kite",
+    "teamName": "KOI",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "jojopyun",
+    "platform": "EUW1",
+    "proName": "jojopyun",
+    "gameName": "VJBYYTF0AO",
+    "tagLine": "EUW",
+    "teamName": "KOI",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "caps",
+    "platform": "EUW1",
+    "proName": "Caps",
+    "gameName": "G2 Caps",
+    "tagLine": "1323",
+    "teamName": "G2",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "labrov",
+    "platform": "EUW1",
+    "proName": "Labrov",
+    "gameName": "G2 Labrov",
+    "tagLine": "8085",
+    "teamName": "G2",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "hanssama",
+    "platform": "EUW1",
+    "proName": "Hans sama",
+    "gameName": "G2 Hans Sama",
+    "tagLine": "12838",
+    "teamName": "G2",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "brokenblade",
+    "platform": "EUW1",
+    "proName": "BrokenBlade",
+    "gameName": "G2 BrokenBlade",
+    "tagLine": "1918",
+    "teamName": "G2",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "skewmond",
+    "platform": "EUW1",
+    "proName": "SkewMond",
+    "gameName": "G2 SkewMond",
+    "tagLine": "3327",
+    "teamName": "G2",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "razork",
+    "platform": "EUW1",
+    "proName": "Razork",
+    "gameName": "Razørk Activoo",
+    "tagLine": "razzz",
+    "teamName": "Fnatic",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "vladi",
+    "platform": "EUW1",
+    "proName": "Vladi",
+    "gameName": "J1HUIV",
+    "tagLine": "000",
+    "teamName": "Fnatic",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "upset",
+    "platform": "EUW1",
+    "proName": "Upset",
+    "gameName": "FNC Upset",
+    "tagLine": "0308",
+    "teamName": "Fnatic",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "lospa",
+    "platform": "EUW1",
+    "proName": "Lospa",
+    "gameName": "i want to win",
+    "tagLine": "이기고싶다",
+    "teamName": "Fnatic",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "oscarinin",
+    "platform": "EUW1",
+    "proName": "Oscarinin",
+    "gameName": "detdert top acc",
+    "tagLine": "RANK1",
+    "teamName": "GIANTX",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "isma",
+    "platform": "EUW1",
+    "proName": "ISMA",
+    "gameName": "ismααα",
+    "tagLine": "EUW",
+    "teamName": "GIANTX",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "jackies",
+    "platform": "EUW1",
+    "proName": "Jackies",
+    "gameName": "detdert mid acc",
+    "tagLine": "RANK1",
+    "teamName": "GIANTX",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "flakked",
+    "platform": "EUW1",
+    "proName": "Flakked",
+    "gameName": "detdert adc acc",
+    "tagLine": "RANK1",
+    "teamName": "GIANTX",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "jun",
+    "platform": "EUW1",
+    "proName": "Jun",
+    "gameName": "Guilhoto",
+    "tagLine": "Messi",
+    "teamName": "GIANTX",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "canna",
+    "platform": "EUW1",
+    "proName": "Canna",
+    "gameName": "Katze",
+    "tagLine": "myao",
+    "teamName": "KC",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "yike",
+    "platform": "EUW1",
+    "proName": "Yike",
+    "gameName": "KC Yiken",
+    "tagLine": "1111",
+    "teamName": "KC",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "kyeahoo",
+    "platform": "EUW1",
+    "proName": "kyeahoo",
+    "gameName": "Left Hand",
+    "tagLine": "korea",
+    "teamName": "KC",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "caliste",
+    "platform": "EUW1",
+    "proName": "Caliste",
+    "gameName": "KC NEXT ADKING",
+    "tagLine": "EUW",
+    "teamName": "KC",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "busio",
+    "platform": "EUW1",
+    "proName": "Busio",
+    "gameName": "basil",
+    "tagLine": "fan",
+    "teamName": "KC",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "maynter",
+    "platform": "EUW1",
+    "proName": "Maynter",
+    "gameName": "Maynter",
+    "tagLine": "EUW",
+    "teamName": "NAVI",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "rhilech",
+    "platform": "EUW1",
+    "proName": "Rhilech",
+    "gameName": "Rhilech",
+    "tagLine": "15105",
+    "teamName": "NAVI",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "poby",
+    "platform": "EUW1",
+    "proName": "Poby",
+    "gameName": "T1 cloud",
+    "tagLine": "2007",
+    "teamName": "NAVI",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "samd",
+    "platform": "EUW1",
+    "proName": "SamD",
+    "gameName": "T1 Smash",
+    "tagLine": "2006",
+    "teamName": "NAVI",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "parus",
+    "platform": "EUW1",
+    "proName": "Parus",
+    "gameName": "Thumbs Down",
+    "tagLine": "4847",
+    "teamName": "NAVI",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "naaknako",
+    "platform": "EUW1",
+    "proName": "Naak Nako",
+    "gameName": "VIT NaakNako",
+    "tagLine": "TOP",
+    "teamName": "Vitality",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "lyncas",
+    "platform": "EUW1",
+    "proName": "Lyncas",
+    "gameName": "JG top boy",
+    "tagLine": "lync1",
+    "teamName": "Vitality",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "carzzy",
+    "platform": "EUW1",
+    "proName": "Carzzy",
+    "gameName": "hovinko z kose",
+    "tagLine": "marek",
+    "teamName": "Vitality",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "fleshy",
+    "platform": "EUW1",
+    "proName": "Fleshy",
+    "gameName": "Passed Pawn",
+    "tagLine": "EUW2",
+    "teamName": "Vitality",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "tracyn",
+    "platform": "EUW1",
+    "proName": "Tracyn",
+    "gameName": "blueskies777",
+    "tagLine": "EUW",
+    "teamName": "Heretics",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "daglas",
+    "platform": "EUW1",
+    "proName": "Daglas",
+    "gameName": "zabujcastworuwpl",
+    "tagLine": "pve",
+    "teamName": "Heretics",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "serin",
+    "platform": "EUW1",
+    "proName": "Serin",
+    "gameName": "SeRiN1",
+    "tagLine": "EUW",
+    "teamName": "Heretics",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "hype",
+    "platform": "EUW1",
+    "proName": "Hype",
+    "gameName": "MISA Hype",
+    "tagLine": "MISA",
+    "teamName": "Heretics",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "way",
+    "platform": "EUW1",
+    "proName": "Way",
+    "gameName": "MISA Way",
+    "tagLine": "MISA",
+    "teamName": "Heretics",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "rooster",
+    "platform": "EUW1",
+    "proName": "Rooster",
+    "gameName": "SHFT Rooster",
+    "tagLine": "0428",
+    "teamName": "Shifters",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "sheo",
+    "platform": "EUW1",
+    "proName": "Sheo",
+    "gameName": "Nerona Imu",
+    "tagLine": "demon",
+    "teamName": "Shifters",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "nuc",
+    "platform": "EUW1",
+    "proName": "nuc",
+    "gameName": "Kylian Dictator",
+    "tagLine": "123",
+    "teamName": "Shifters",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "paduck",
+    "platform": "EUW1",
+    "proName": "Paduck",
+    "gameName": "Right Hand",
+    "tagLine": "korea",
+    "teamName": "Shifters",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "stend",
+    "platform": "EUW1",
+    "proName": "Stend",
+    "gameName": "Stendinho 10",
+    "tagLine": "lrd",
+    "teamName": "Shifters",
+    "league": "LEC",
+    "role": "SUPPORT"
+  },
+  {
+    "code": "wunder",
+    "platform": "EUW1",
+    "proName": "Wunder",
+    "gameName": "gamedaybucket",
+    "tagLine": "1mod9",
+    "teamName": "SK",
+    "league": "LEC",
+    "role": "TOP"
+  },
+  {
+    "code": "skeanz",
+    "platform": "EUW1",
+    "proName": "Skeanz",
+    "gameName": "Skeanz",
+    "tagLine": "Neil",
+    "teamName": "SK",
+    "league": "LEC",
+    "role": "JUNGLE"
+  },
+  {
+    "code": "slowq",
+    "platform": "EUW1",
+    "proName": "SlowQ",
+    "gameName": "yebit",
+    "tagLine": "haha",
+    "teamName": "SK",
+    "league": "LEC",
+    "role": "MIDDLE"
+  },
+  {
+    "code": "jopa",
+    "platform": "EUW1",
+    "proName": "Jopa",
+    "gameName": "Jopa",
+    "tagLine": "1WAY",
+    "teamName": "SK",
+    "league": "LEC",
+    "role": "BOTTOM"
+  },
+  {
+    "code": "mikyx",
+    "platform": "EUW1",
+    "proName": "Mikyx",
+    "gameName": "RenoirDessendre",
+    "tagLine": "Miky",
+    "teamName": "SK",
+    "league": "LEC",
+    "role": "SUPPORT"
+  }
+]
+]

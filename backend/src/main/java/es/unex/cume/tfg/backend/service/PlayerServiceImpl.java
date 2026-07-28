@@ -30,6 +30,15 @@ public class PlayerServiceImpl implements PlayerService {
     private final ConcurrentHashMap<String, ReentrantLock> refreshLocks = new ConcurrentHashMap<>();
 
 
+    /**
+     * Creates the player service.
+     *
+     * @param playerRepository player repository
+     * @param riotFetchService Riot data service
+     * @param matchService match service
+     * @param rankedRankService ranked result service
+     * @param playerStatsService player statistics service
+     */
     public PlayerServiceImpl(PlayerRepository playerRepository, RiotFetchService riotFetchService, MatchService matchService, RankedRankService rankedRankService,
                              PlayerStatsService playerStatsService) {
         this.playerRepository = playerRepository;
@@ -42,7 +51,7 @@ public class PlayerServiceImpl implements PlayerService {
     /**
      * Finds a player by their PUUID.
      *
-     * @param puuid
+     * @param puuid player PUUID
      * @return the player if it exists.
      */
     @Override
@@ -53,7 +62,7 @@ public class PlayerServiceImpl implements PlayerService {
     /**
      * Finds if a player already exists in the database by their PUUID.
      *
-     * @param puuid
+     * @param puuid player PUUID
      * @return true if the player exists.
      */
     @Override
@@ -65,9 +74,9 @@ public class PlayerServiceImpl implements PlayerService {
      * Looks for a player by their Riot game name and tag line. If it exists, returns it.
      * If not, creates a new one.
      *
-     * @param platform
-     * @param gameName
-     * @param tagLine
+     * @param platform Riot platform
+     * @param gameName Riot game name
+     * @param tagLine Riot tag line
      * @return the existing or newly created player.
      */
     @Transactional
@@ -83,6 +92,7 @@ public class PlayerServiceImpl implements PlayerService {
             puuid = riotFetchService.fetchPuuid(platform, gameName, tagLine);
         }
 
+        // Prevents two requests from creating or completing the same player
         ReentrantLock lock = getPlayerLock(puuid);
         lock.lock();
 
@@ -151,15 +161,15 @@ public class PlayerServiceImpl implements PlayerService {
     /**
      * Synchronizes a player's data for a professional player.
      *
-     * @param platform
-     * @param gameName
-     * @param tagLine
-     * @param puuid
+     * @param platform Riot platform
+     * @param gameName Riot game name
+     * @param tagLine Riot tag line
+     * @param puuid player PUUID
      * @return the synchronized player.
      */
     @Override
     public Player syncPlayerForProfessional(Platform platform, String gameName, String tagLine, String puuid) {
-        // Fetches summoner data
+        // Gets the latest icon and summoner level
         SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, puuid);
 
         // Checks if player already exists
@@ -193,9 +203,10 @@ public class PlayerServiceImpl implements PlayerService {
     /**
      * Creates a new player if it doesn't exist.
      *
-     * @param platform
-     * @param gameName
-     * @param tagLine
+     * @param puuid player PUUID
+     * @param platform Riot platform
+     * @param gameName Riot game name
+     * @param tagLine Riot tag line
      * @return the created player.
      */
     private Player savePlayer(String puuid, Platform platform, String gameName, String tagLine) {
@@ -213,11 +224,18 @@ public class PlayerServiceImpl implements PlayerService {
         return syncPlayerData(savedPlayer, platform);
     }
 
+    /**
+     * Updates profile, matches, ranks and statistics as one synchronization.
+     *
+     * @param player player to update
+     * @param platform Riot platform
+     * @return synchronized player
+     */
     private Player syncPlayerData(Player player, Platform platform){
         Instant originalSyncAt = player.getLastSyncAt();
         Instant newSyncAt = Instant.now();
 
-        // Fetches summoner data (icon + level)
+        // Gets the latest icon and summoner level
         SummonerDto summonerDto = riotFetchService.fetchSummoner(platform, player.getPuuid());
         player.setProfileIconId(summonerDto.profileIconId());
         player.setSummonerLevel(summonerDto.summonerLevel());
@@ -246,7 +264,7 @@ public class PlayerServiceImpl implements PlayerService {
     /**
      * Gets the lock for a player to prevent concurrent refreshes. If the lock doesn't exist, creates it.
      *
-     * @param puuid
+     * @param puuid player PUUID
      * @return the lock for the player.
      */
     private ReentrantLock getPlayerLock(String puuid) {

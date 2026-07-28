@@ -19,6 +19,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Handles missing players.
+     *
+     * @param ex thrown exception
+     * @return not found response
+     */
     @ExceptionHandler(PlayerNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handlePlayerNotFound(PlayerNotFoundException ex) {
         return buildResponse(
@@ -29,6 +35,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles missing matches.
+     *
+     * @param ex thrown exception
+     * @return not found response
+     */
     @ExceptionHandler(MatchNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handleMatchNotFound(MatchNotFoundException ex) {
         return buildResponse(
@@ -39,6 +51,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles missing champions.
+     *
+     * @param ex thrown exception
+     * @return not found response
+     */
     @ExceptionHandler(ChampionNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handleChampionNotFound(ChampionNotFoundException ex) {
         return buildResponse(
@@ -49,6 +67,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles outdated champion catalog errors.
+     *
+     * @param ex thrown exception
+     * @return internal server error response
+     */
     @ExceptionHandler(ChampionCatalogException.class)
     public ResponseEntity<ApiErrorDto> handleChampionCatalog(ChampionCatalogException ex) {
         return buildResponse(
@@ -59,6 +83,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles missing professional players.
+     *
+     * @param ex thrown exception
+     * @return not found response
+     */
     @ExceptionHandler(ProfessionalNotFoundException.class)
     public ResponseEntity<ApiErrorDto> handleProfessionalNotFound(ProfessionalNotFoundException ex) {
         return buildResponse(
@@ -69,8 +99,15 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Converts Riot API errors into stable API responses.
+     *
+     * @param ex Riot API exception
+     * @return response matching the Riot status
+     */
     @ExceptionHandler(RiotApiException.class)
     public ResponseEntity<ApiErrorDto> handleRiotApiException(RiotApiException ex) {
+        // Maps Riot status codes to stable application errors
         int status = ex.getStatus().value();
 
         if (status == 400) {
@@ -180,6 +217,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles missing request parameters.
+     *
+     * @param ex thrown exception
+     * @return bad request response
+     */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiErrorDto> handleMissingParameter(MissingServletRequestParameterException ex) {
         return buildResponse(
@@ -190,6 +233,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles request parameters with an invalid type.
+     *
+     * @param ex thrown exception
+     * @return bad request response
+     */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiErrorDto> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return buildResponse(
@@ -200,6 +249,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles invalid request body values.
+     *
+     * @param ex thrown exception
+     * @return bad request response
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorDto> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
         return buildResponse(
@@ -210,6 +265,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles invalid method parameter values.
+     *
+     * @param ex thrown exception
+     * @return bad request response
+     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ApiErrorDto> handleConstraintViolation(ConstraintViolationException ex) {
         return buildResponse(
@@ -220,6 +281,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles database integrity conflicts.
+     *
+     * @param ex thrown exception
+     * @return conflict response
+     */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorDto> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return buildResponse(
@@ -230,6 +297,12 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Handles unexpected application errors.
+     *
+     * @param ex thrown exception
+     * @return internal server error response
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorDto> handleGenericException(Exception ex) {
         return buildResponse(
@@ -240,7 +313,17 @@ public class GlobalExceptionHandler {
         );
     }
 
+    /**
+     * Builds the shared API error format.
+     *
+     * @param status HTTP response status
+     * @param code stable application error code
+     * @param error short error name
+     * @param message readable error message
+     * @return formatted API error response
+     */
     private ResponseEntity<ApiErrorDto> buildResponse(HttpStatusCode status, String code, String error, String message) {
+        // Creates the common response body and applies its HTTP status
         return ResponseEntity
                 .status(status)
                 .body(ApiErrorDto.from(status.value(), code, error, message));

@@ -3,11 +3,25 @@ package es.unex.cume.tfg.backend.service;
 import es.unex.cume.tfg.backend.model.RecommendedBuild;
 
 import java.util.List;
-import java.util.Optional;
 
+
+/**
+ * Service that calculates and gets champion build recommendations.
+ */
 public interface RecommendedBuildService {
 
+    /**
+     * Recalculates recommendations from current patch ranked data.
+     *
+     * @return saved build recommendations
+     */
     List<RecommendedBuild> calculateAllRecommendedBuilds();
 
-    Optional<RecommendedBuild> findByChampionId(Integer championId);
+    /**
+     * Finds all recommendations for one champion.
+     *
+     * @param championId champion identifier
+     * @return recommendations grouped by role
+     */
+    List<RecommendedBuild> findByChampionId(Integer championId);
 }

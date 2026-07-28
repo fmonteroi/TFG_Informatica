@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Service facade that groups Riot API fetch operations.
+ * Service that groups Riot API calls.
  */
 public interface RiotFetchService {
     /**
-     * Fetches a player's PUUID from their Riot ID.
+     * Gets a player's PUUID from their Riot ID.
      *
      * @param platform the Riot platform.
      * @param gameName the Riot game name.
@@ -24,7 +24,7 @@ public interface RiotFetchService {
     String fetchPuuid(Platform platform, String gameName, String tagLine);
 
     /**
-     * Fetches summoner profile data by PUUID.
+     * Gets summoner profile data by PUUID.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
@@ -33,7 +33,7 @@ public interface RiotFetchService {
     SummonerDto fetchSummoner(Platform platform, String puuid);
 
     /**
-     * Fetches match IDs since an optional start time.
+     * Gets match IDs since an optional start time.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
@@ -44,7 +44,7 @@ public interface RiotFetchService {
     List<String> fetchMatchIdsSince(Platform platform, String puuid, int count, Long startTime);
 
     /**
-     * Fetches match IDs using Riot pagination.
+     * Gets match IDs using Riot pagination.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
@@ -55,7 +55,7 @@ public interface RiotFetchService {
     List<String> fetchAllMatchIdsSince(Platform platform, String puuid, int maxMatches, Long startTime);
 
     /**
-     * Fetches a full match payload by match ID.
+     * Gets full match data by match ID.
      *
      * @param platform the Riot platform.
      * @param matchId the Riot match ID.
@@ -64,7 +64,7 @@ public interface RiotFetchService {
     MatchDto fetchMatchByMatchId(Platform platform, String matchId);
 
     /**
-     * Fetches recent match payloads by Riot ID.
+     * Gets recent matches by Riot ID.
      *
      * @param platform the Riot platform.
      * @param gameName the Riot game name.
@@ -75,7 +75,7 @@ public interface RiotFetchService {
     List<MatchDto> fetchRecentMatches(Platform platform, String gameName, String tagLine, int count);
 
     /**
-     * Fetches current game information by PUUID.
+     * Gets current game information by PUUID.
      *
      * @param platform the Riot platform.
      * @param puuid the player PUUID.
@@ -83,5 +83,12 @@ public interface RiotFetchService {
      */
     Optional<CurrentGameInfoDto> fetchCurrentGame(Platform platform, String puuid);
 
+    /**
+     * Gets ranked queue results by PUUID.
+     *
+     * @param platform Riot platform
+     * @param puuid player PUUID
+     * @return ranked queue results
+     */
     List<LeagueEntryDto> fetchLeagueEntries(Platform platform, String puuid);
 }

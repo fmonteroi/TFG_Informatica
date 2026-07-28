@@ -19,6 +19,12 @@ public class ChampionServiceImpl implements ChampionService {
     private final ChampionRepository championRepository;
     private final ChampionJsonLoader championJsonLoader;
 
+    /**
+     * Creates the champion service.
+     *
+     * @param championRepository champion repository
+     * @param championJsonLoader champion catalog loader
+     */
     public ChampionServiceImpl(ChampionRepository championRepository, ChampionJsonLoader championJsonLoader) {
         this.championRepository = championRepository;
         this.championJsonLoader = championJsonLoader;
@@ -42,13 +48,13 @@ public class ChampionServiceImpl implements ChampionService {
     }
 
     /**
-     * Finds all champions in the database.
+     * Finds all champions with their calculated statistics.
      *
-     * @return the list of all champions
+     * @return list of all champions
      */
     @Override
     public List<Champion> findAllChampions() {
-        return championRepository.findAll();
+        return championRepository.findAllWithStats();
     }
 
     /**
@@ -56,6 +62,7 @@ public class ChampionServiceImpl implements ChampionService {
      */
     @Override
     public void initChampions() {
+        // Loads the current catalog before updating stored champions
         List<ChampionJsonLoader.ChampionSeed> championSeeds = championJsonLoader.loadChampionSeeds();
         List<Champion> champions = new ArrayList<>();
 
@@ -64,6 +71,7 @@ public class ChampionServiceImpl implements ChampionService {
             Champion champion;
 
             if (optionalChampion.isPresent()) {
+                // Keeps the existing entity and its database relations
                 champion = optionalChampion.get();
             } else {
                 champion = new Champion();
@@ -74,6 +82,7 @@ public class ChampionServiceImpl implements ChampionService {
             champions.add(champion);
         }
 
+        // Saves all catalog changes in one database operation
         championRepository.saveAll(champions);
     }
 

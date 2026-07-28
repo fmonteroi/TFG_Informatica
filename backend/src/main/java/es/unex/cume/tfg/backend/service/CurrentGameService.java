@@ -3,7 +3,7 @@ package es.unex.cume.tfg.backend.service;
 import es.unex.cume.tfg.backend.dto.CurrentGameDto;
 
 /**
- * Service that retrieves current game information for players.
+ * Service that gets current game information for players.
  */
 public interface CurrentGameService {
     /**

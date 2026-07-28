@@ -1,7 +1,7 @@
 import ParticipationCard from '../ParticipationCard.tsx'
 import MatchScoreboard from '../MatchScoreboard.tsx'
 import { formatDate, formatDuration } from '../../lib/format.ts'
-import { queueLabel } from '../../lib/lol.ts'
+import { formatRole, queueLabel } from '../../lib/lol.ts'
 import type { ItemInfo } from '../../lib/dragontail.ts'
 import type { MatchDetailsDto, ParticipationDto } from '../../types/api.ts'
 
@@ -41,18 +41,32 @@ function PlayerHistory({
 
             <div className="space-y-4">
                 {participations.map((participation) => {
-                    const championIcon =
-                        participation.championId && championMap
-                            ? championMap.get(participation.championId) ?? null
-                            : null
+                    let championIcon = null
+
+                    if (participation.championId != null && championMap != null) {
+                        championIcon = championMap.get(participation.championId) ?? null
+                    }
 
                     const spellIds = [
                         participation.build?.summoner1Id ?? null,
                         participation.build?.summoner2Id ?? null,
                     ]
 
-                    const mainItemIds = participation.build
-                        ? [
+                    const summaryParts = [
+                        `${participation.kills}/${participation.deaths}/${participation.assists}`,
+                    ]
+
+                    if (participation.teamPosition) {
+                        summaryParts.push(formatRole(participation.teamPosition))
+                    }
+
+                    summaryParts.push(queueLabel(participation.queueId))
+                    const summaryLine = summaryParts.join(' · ')
+
+                    let mainItemIds: Array<number | null> = []
+
+                    if (participation.build) {
+                        mainItemIds = [
                             participation.build.item0,
                             participation.build.item1,
                             participation.build.item2,
@@ -60,27 +74,61 @@ function PlayerHistory({
                             participation.build.item4,
                             participation.build.item5,
                         ]
-                        : []
+                    }
 
                     const isExpanded = expandedMatchId === participation.matchId
-                    const expandedMatch = participation.matchId
-                        ? matchCache[participation.matchId] ?? null
-                        : null
+                    let expandedMatch = null
+
+                    if (participation.matchId) {
+                        expandedMatch = matchCache[participation.matchId] ?? null
+                    }
+
+                    let tone: 'win' | 'loss' = 'loss'
+                    let resultClasses = 'bg-rose-500/20 text-rose-300'
+                    let resultText = 'Derrota'
+
+                    if (participation.win) {
+                        tone = 'win'
+                        resultClasses = 'bg-emerald-500/20 text-emerald-300'
+                        resultText = 'Victoria'
+                    }
+
+                    let expandedContent = null
+
+                    if (loadingMatchId === participation.matchId && !expandedMatch) {
+                        expandedContent = (
+                            <p className="text-slate-400">
+                                Cargando detalle de la partida...
+                            </p>
+                        )
+                    } else if (expandedMatch) {
+                        expandedContent = (
+                            <MatchScoreboard
+                                match={expandedMatch}
+                                playerPuuid={playerPuuid}
+                                playerPlatform={playerPlatform}
+                                championMap={championMap}
+                                spellMap={summonerSpellMap}
+                                itemInfoMap={itemInfoMap}
+                                queueLabel={queueLabel}
+                                formatDuration={formatDuration}
+                                formatDate={formatDate}
+                            />
+                        )
+                    }
 
                     return (
                         <ParticipationCard
                             key={participation.id}
-                            tone={participation.win ? 'win' : 'loss'}
+                            tone={tone}
                             topLeft={
                                 <span
                                     className={[
                                         'rounded-xl px-3 py-2 text-sm font-bold uppercase tracking-wide',
-                                        participation.win
-                                            ? 'bg-emerald-500/20 text-emerald-300'
-                                            : 'bg-rose-500/20 text-rose-300',
+                                        resultClasses,
                                     ].join(' ')}
                                 >
-                                    {participation.win ? 'Victoria' : 'Derrota'}
+                                    {resultText}
                                 </span>
                             }
                             topRight={
@@ -90,9 +138,7 @@ function PlayerHistory({
                             }
                             championIcon={championIcon}
                             championName={participation.championName}
-                            summaryLine={`${participation.kills}/${participation.deaths}/${participation.assists} · ${
-                                participation.teamPosition || 'Sin rol'
-                            } · ${queueLabel(participation.queueId)}`}
+                            summaryLine={summaryLine}
                             spellIds={spellIds}
                             spellMap={summonerSpellMap}
                             mainItemIds={mainItemIds}
@@ -103,21 +149,7 @@ function PlayerHistory({
                             expanded={isExpanded}
                             onToggle={() => onToggleParticipation(participation)}
                         >
-                            {loadingMatchId === participation.matchId && !expandedMatch ? (
-                                <p className="text-slate-400">Cargando detalle de la partida...</p>
-                            ) : expandedMatch ? (
-                                <MatchScoreboard
-                                    match={expandedMatch}
-                                    playerPuuid={playerPuuid}
-                                    playerPlatform={playerPlatform}
-                                    championMap={championMap}
-                                    spellMap={summonerSpellMap}
-                                    itemInfoMap={itemInfoMap}
-                                    queueLabel={queueLabel}
-                                    formatDuration={formatDuration}
-                                    formatDate={formatDate}
-                                />
-                            ) : null}
+                            {expandedContent}
                         </ParticipationCard>
                     )
                 })}

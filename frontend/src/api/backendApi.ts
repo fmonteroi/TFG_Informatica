@@ -16,7 +16,27 @@ type BackendErrorBody = {
     message?: string
 }
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080'
+function getBaseUrl() {
+    const configuredUrl = import.meta.env.VITE_API_URL
+
+    if (configuredUrl) {
+        return configuredUrl
+    } else {
+        return 'http://localhost:8080'
+    }
+}
+
+function getErrorMessage(body: BackendErrorBody, fallbackStatus: number) {
+    if (body.message) {
+        return body.message
+    } else if (body.error) {
+        return body.error
+    } else {
+        return `Error HTTP ${fallbackStatus}`
+    }
+}
+
+const BASE_URL = getBaseUrl()
 
 /**
  * Error thrown when the backend returns a non-successful response.
@@ -28,12 +48,28 @@ export class ApiError extends Error {
     timestamp: string | null
 
     constructor(body: BackendErrorBody, fallbackStatus: number) {
-        super(body.message ?? body.error ?? `Error HTTP ${fallbackStatus}`)
+        super(getErrorMessage(body, fallbackStatus))
         this.name = 'ApiError'
-        this.status = body.status ?? fallbackStatus
-        this.code = body.code ?? 'HTTP_ERROR'
-        this.error = body.error ?? null
-        this.timestamp = body.timestamp ?? null
+
+        this.status = fallbackStatus
+        if (body.status !== undefined) {
+            this.status = body.status
+        }
+
+        this.code = 'HTTP_ERROR'
+        if (body.code) {
+            this.code = body.code
+        }
+
+        this.error = null
+        if (body.error) {
+            this.error = body.error
+        }
+
+        this.timestamp = null
+        if (body.timestamp) {
+            this.timestamp = body.timestamp
+        }
     }
 }
 

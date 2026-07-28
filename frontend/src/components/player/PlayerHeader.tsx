@@ -10,22 +10,42 @@ type PlayerHeaderProps = {
 }
 
 function PlayerHeader({ player, dataDragonVersion, refreshing, onRefresh }: PlayerHeaderProps) {
+    let profileIcon
+
+    if (dataDragonVersion) {
+        profileIcon = (
+            <img
+                src={getProfileIconUrl(player.profileIconId, dataDragonVersion)}
+                alt={`Icono de perfil de ${player.gameName}`}
+                className="h-20 w-20 rounded-lg border border-slate-700"
+            />
+        )
+    } else {
+        profileIcon = (
+            <div
+                role="img"
+                aria-label="Icono de perfil cargando"
+                className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
+            />
+        )
+    }
+
+    let lastSynchronization = 'Sin sincronizar'
+
+    if (player.lastSyncAt) {
+        lastSynchronization = formatDate(player.lastSyncAt)
+    }
+
+    let refreshButtonText = 'Refrescar historial'
+
+    if (refreshing) {
+        refreshButtonText = 'Refrescando...'
+    }
+
     return (
         <section className="flex flex-col gap-4 border-b border-slate-800 pb-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-4">
-                {dataDragonVersion ? (
-                    <img
-                        src={getProfileIconUrl(player.profileIconId, dataDragonVersion)}
-                        alt={`Icono de perfil de ${player.gameName}`}
-                        className="h-20 w-20 rounded-lg border border-slate-700"
-                    />
-                ) : (
-                    <div
-                        role="img"
-                        aria-label="Icono de perfil cargando"
-                        className="h-20 w-20 rounded-lg border border-slate-700 bg-slate-800"
-                    />
-                )}
+                {profileIcon}
 
                 <div>
                     <h1 className="text-3xl font-black">
@@ -35,8 +55,7 @@ function PlayerHeader({ player, dataDragonVersion, refreshing, onRefresh }: Play
                         {player.platform} · Nivel {player.summonerLevel}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                        Última sincronización:{' '}
-                        {player.lastSyncAt ? formatDate(player.lastSyncAt) : 'Sin sincronizar'}
+                        Última sincronización: {lastSynchronization}
                     </p>
                 </div>
             </div>
@@ -47,7 +66,7 @@ function PlayerHeader({ player, dataDragonVersion, refreshing, onRefresh }: Play
                 disabled={refreshing}
                 className="rounded-lg bg-cyan-400 px-4 py-3 font-bold text-slate-950 transition hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-                {refreshing ? 'Refrescando...' : 'Refrescar historial'}
+                {refreshButtonText}
             </button>
         </section>
     )

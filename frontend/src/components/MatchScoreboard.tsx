@@ -2,6 +2,7 @@ import type {ItemInfo} from '../lib/dragontail'
 import ItemTooltip from './ItemTooltip'
 import type {MatchDetailsDto} from '../types/api'
 import { Link } from 'react-router-dom'
+import { formatRole } from '../lib/lol'
 
 type MatchScoreboardProps = {
     match: MatchDetailsDto
@@ -16,15 +17,19 @@ type MatchScoreboardProps = {
 }
 
 function scoreBoardRowClass(isFocusedPlayer: boolean) {
-    return isFocusedPlayer
-        ? 'border-cyan-400/50 bg-cyan-950/30'
-        : 'border-slate-800 bg-slate-950/80'
+    if (isFocusedPlayer) {
+        return 'border-cyan-400/50 bg-cyan-950/30'
+    } else {
+        return 'border-slate-800 bg-slate-950/80'
+    }
 }
 
 function teamSectionClass(teamId: number) {
-    return teamId === 100
-        ? 'border-cyan-500/20 bg-cyan-950/10'
-        : 'border-rose-500/20 bg-rose-950/10'
+    if (teamId === 100) {
+        return 'border-cyan-500/20 bg-cyan-950/10'
+    } else {
+        return 'border-rose-500/20 bg-rose-950/10'
+    }
 }
 
 function MatchScoreboard({
@@ -51,6 +56,11 @@ function MatchScoreboard({
                 const teamParticipations = match.participations.filter(
                     (participation) => participation.teamId === teamId,
                 )
+                let teamName = 'Equipo rojo'
+
+                if (teamId === 100) {
+                    teamName = 'Equipo azul'
+                }
 
                 return (
                     <section
@@ -62,7 +72,7 @@ function MatchScoreboard({
                     >
                         <div className="flex items-center justify-between">
                             <h3 className="text-sm font-bold uppercase tracking-wide text-slate-100">
-                                {teamId === 100 ? 'Equipo azul' : 'Equipo rojo'}
+                                {teamName}
                             </h3>
 
                             <span className="text-xs text-slate-300">
@@ -72,10 +82,12 @@ function MatchScoreboard({
 
                         <div className="space-y-2">
                             {teamParticipations.map((participation) => {
-                                const championIcon =
-                                    participation.championId && championMap
-                                        ? championMap.get(participation.championId) ?? null
-                                        : null
+                                let championIcon = null
+
+                                if (participation.championId != null && championMap != null) {
+                                    championIcon =
+                                        championMap.get(participation.championId) ?? null
+                                }
 
                                 const isFocusedPlayer = participation.puuid === playerPuuid
 
@@ -84,8 +96,10 @@ function MatchScoreboard({
                                     participation.build?.summoner2Id ?? null,
                                 ]
 
-                                const mainItemIds = participation.build
-                                    ? [
+                                let mainItemIds: Array<number | null> = []
+
+                                if (participation.build) {
+                                    mainItemIds = [
                                         participation.build.item0,
                                         participation.build.item1,
                                         participation.build.item2,
@@ -93,7 +107,42 @@ function MatchScoreboard({
                                         participation.build.item4,
                                         participation.build.item5,
                                     ]
-                                    : []
+                                }
+
+                                let championIconContent
+
+                                if (championIcon) {
+                                    championIconContent = (
+                                        <img
+                                            src={championIcon}
+                                            alt={participation.championName ?? 'Champion'}
+                                            className="h-12 w-12 rounded-xl"
+                                        />
+                                    )
+                                } else {
+                                    championIconContent = (
+                                        <div className="h-12 w-12 rounded-xl border border-slate-700 bg-slate-800"/>
+                                    )
+                                }
+
+                                let playerNameContent
+
+                                if (participation.gameName && participation.tagLine) {
+                                    playerNameContent = (
+                                        <Link
+                                            to={`/jugador/${encodeURIComponent(playerPlatform)}/${encodeURIComponent(participation.gameName)}/${encodeURIComponent(participation.tagLine)}`}
+                                            className="block truncate font-bold text-slate-100 transition hover:text-cyan-300 hover:underline focus-visible:outline-2 focus-visible:outline-cyan-300"
+                                        >
+                                            {participation.gameName}#{participation.tagLine}
+                                        </Link>
+                                    )
+                                } else {
+                                    playerNameContent = (
+                                        <p className="truncate font-bold text-slate-400">
+                                            Jugador desconocido
+                                        </p>
+                                    )
+                                }
 
                                 return (
                                     <div
@@ -105,33 +154,14 @@ function MatchScoreboard({
                                         ].join(' ')}
                                     >
                                         <div className="flex min-w-0 items-center gap-3">
-                                            {championIcon ? (
-                                                <img
-                                                    src={championIcon}
-                                                    alt={participation.championName ?? 'Champion'}
-                                                    className="h-12 w-12 rounded-xl"
-                                                />
-                                            ) : (
-                                                <div
-                                                    className="h-12 w-12 rounded-xl border border-slate-700 bg-slate-800"/>
-                                            )}
+                                            {championIconContent}
 
                                             <div className="min-w-0">
-                                                {participation.gameName && participation.tagLine ? (
-                                                    <Link
-                                                        to={`/jugador/${encodeURIComponent(playerPlatform)}/${encodeURIComponent(participation.gameName)}/${encodeURIComponent(participation.tagLine)}`}
-                                                        className="block truncate font-bold text-slate-100 transition hover:text-cyan-300 hover:underline focus-visible:outline-2 focus-visible:outline-cyan-300"
-                                                    >
-                                                        {participation.gameName}#{participation.tagLine}
-                                                    </Link>
-                                                ) : (
-                                                    <p className="truncate font-bold text-slate-400">
-                                                        Jugador desconocido
-                                                    </p>
-                                                )}
+                                                {playerNameContent}
 
                                                 <p className="truncate text-sm text-slate-300">
-                                                    {participation.championName} · {participation.teamPosition || 'Sin rol'}
+                                                    {participation.championName}
+                                                    {participation.teamPosition && ` · ${formatRole(participation.teamPosition)}`}
                                                 </p>
                                             </div>
                                         </div>
@@ -144,7 +174,11 @@ function MatchScoreboard({
 
                                         <div className="flex flex-wrap items-center gap-1.5 xl:flex-nowrap">
                                             {spellIds.map((spellId, index) => {
-                                                const spellIcon = spellId && spellMap ? spellMap.get(spellId) : null
+                                                let spellIcon = null
+
+                                                if (spellId != null && spellMap != null) {
+                                                    spellIcon = spellMap.get(spellId)
+                                                }
 
                                                 if (!spellIcon) {
                                                     return (

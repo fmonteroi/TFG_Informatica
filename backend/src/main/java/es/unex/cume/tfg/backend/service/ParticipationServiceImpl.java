@@ -7,6 +7,7 @@ import es.unex.cume.tfg.backend.model.Match;
 import es.unex.cume.tfg.backend.model.Participation;
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
+import es.unex.cume.tfg.backend.model.Role;
 import es.unex.cume.tfg.backend.repository.ChampionRepository;
 import es.unex.cume.tfg.backend.repository.ParticipationRepository;
 import es.unex.cume.tfg.backend.riot.dto.MatchDto;
@@ -27,6 +28,13 @@ public class ParticipationServiceImpl implements ParticipationService {
     private final ChampionRepository championRepository;
     private final PlayerSyncService playerSyncService;
 
+    /**
+     * Creates the participation service.
+     *
+     * @param participationRepository participation repository
+     * @param championRepository champion repository
+     * @param playerSyncService basic player synchronization service
+     */
     public ParticipationServiceImpl(ParticipationRepository participationRepository,
                                     ChampionRepository championRepository,
                                     PlayerSyncService playerSyncService) {
@@ -98,7 +106,7 @@ public class ParticipationServiceImpl implements ParticipationService {
 
             // General information
             participation.setGameStartAt(Instant.ofEpochMilli(matchDto.info().gameStartTimestamp()));
-            participation.setTeamPosition(p.teamPosition());
+            participation.setTeamPosition(toRole(p.teamPosition()));
 
             // Build
             Build build = dtoToBuild(p, participation);
@@ -110,6 +118,31 @@ public class ParticipationServiceImpl implements ParticipationService {
         participationRepository.saveAll(participations);
     }
 
+    /**
+     * Converts a Riot position into the role used by the application.
+     *
+     * @param teamPosition position returned by Riot
+     * @return matching application role, or null when Riot provides no position
+     */
+    private Role toRole(String teamPosition) {
+        if (teamPosition == null || teamPosition.isBlank()) {
+            return null;
+        }
+
+        if ("UTILITY".equals(teamPosition)) {
+            return Role.SUPPORT;
+        }
+
+        return Role.valueOf(teamPosition);
+    }
+
+    /**
+     * Creates a build from Riot participant data.
+     *
+     * @param p Riot participant data
+     * @param participation related participation
+     * @return created build
+     */
     private Build dtoToBuild(MatchDto.Participant p, Participation participation) {
         Build build = new Build();
         build.setItem0(p.item0());

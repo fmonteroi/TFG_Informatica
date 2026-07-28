@@ -8,21 +8,23 @@ import ProfessionalProfile from './pages/ProfessionalProfile'
 
 function navClass({ isActive }: { isActive: boolean }) {
     const baseClasses =
-        'border-b-2 px-2 py-3 text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-cyan-300'
+        'border-b-2 px-2 py-3 text-base font-semibold transition focus-visible:outline-2 focus-visible:outline-cyan-300'
 
-    return isActive
-        ? `${baseClasses} border-cyan-300 text-cyan-200`
-        : `${baseClasses} border-transparent text-slate-300 hover:border-slate-600 hover:text-white`
+    if (isActive) {
+        return `${baseClasses} border-cyan-300 text-cyan-200`
+    } else {
+        return `${baseClasses} border-transparent text-slate-300 hover:border-slate-600 hover:text-white`
+    }
 }
 
 function App() {
     return (
-        <div className="min-h-screen bg-slate-950 text-slate-100">
+        <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
             <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <Link
                         to="/"
-                        className="w-fit text-2xl font-black text-white focus-visible:outline-2 focus-visible:outline-cyan-300"
+                        className="w-fit text-3xl font-black text-white focus-visible:outline-2 focus-visible:outline-cyan-300"
                     >
                         Easy<span className="text-cyan-300">Rift</span>
                     </Link>
@@ -41,7 +43,7 @@ function App() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-7xl px-4 py-7 sm:py-9">
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-7 sm:py-9">
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/jugador/:platform/:gameName/:tagLine" element={<Player />} />
@@ -51,6 +53,11 @@ function App() {
                     <Route path="/profesionales/:puuid" element={<ProfessionalProfile />} />
                 </Routes>
             </main>
+
+            <footer className="relative z-10 border-t border-slate-800 bg-slate-950 px-4 py-4 text-center text-xs text-slate-400">
+                EasyRift es un proyecto educativo desarrollado como Trabajo de Fin de Grado.
+                No está afiliado, respaldado ni patrocinado por Riot Games.
+            </footer>
         </div>
     )
 }

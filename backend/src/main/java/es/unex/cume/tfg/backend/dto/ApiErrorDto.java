@@ -14,6 +14,12 @@ public record ApiErrorDto(
 ) {
     /**
      * Creates an error response using the current timestamp.
+     *
+     * @param status HTTP status code
+     * @param code internal error code
+     * @param error short error name
+     * @param message readable error message
+     * @return API error response
      */
     public static ApiErrorDto from(int status, String code, String error, String message) {
         return new ApiErrorDto(Instant.now().toString(), status, code, error, message);

@@ -21,6 +21,13 @@ public class MatchClient {
     private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
+    /**
+     * Creates the Riot match client.
+     *
+     * @param restClient shared REST client
+     * @param baseUrlBuilder Riot URL builder
+     * @param riotErrorHandler Riot error handler
+     */
     public MatchClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
         this.baseUrlBuilder = baseUrlBuilder;
@@ -28,7 +35,7 @@ public class MatchClient {
     }
 
     /**
-     * Fetches match IDs for a player since an optional start time.
+     * Gets match IDs for a player since an optional start time.
      *
      * @param platform the Riot platform used to infer the routing region.
      * @param puuid the player PUUID.
@@ -38,6 +45,7 @@ public class MatchClient {
      * @return the fetched match IDs.
      */
     public List<String> getMatchIdsByPuuidSince(Platform platform, String puuid, int count, int start, Long startTime) {
+        // Builds the regional Match-V5 URL with pagination
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform); // europe.api.riotgames.com
 
         UriComponentsBuilder uriBuilder = UriComponentsBuilder
@@ -47,6 +55,7 @@ public class MatchClient {
                 .queryParam("count", count);
 
         if (startTime != null) {
+            // Limits results to matches played after the last synchronization
             uriBuilder.queryParam("startTime", startTime);
         }
 
@@ -55,6 +64,7 @@ public class MatchClient {
                 .encode()
                 .toUri();
 
+        // Sends the request and keeps the list element type
         return restClient.get()
                 .uri(uri)
                 .retrieve()
@@ -64,13 +74,14 @@ public class MatchClient {
     }
 
     /**
-     * Fetches the full Riot match payload by match ID.
+     * Gets the full Riot match data by match ID.
      *
      * @param platform the Riot platform used to infer the routing region.
      * @param matchId the Riot match ID.
      * @return the Riot match DTO.
      */
     public MatchDto getMatchByMatchId(Platform platform, String matchId) {
+        // Builds the regional Match-V5 detail URL
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform);
 
         URI uri = UriComponentsBuilder
@@ -80,6 +91,7 @@ public class MatchClient {
                 .encode()
                 .toUri();
 
+        // Sends the request and maps the match response
         return restClient.get()
                 .uri(uri)
                 .retrieve()

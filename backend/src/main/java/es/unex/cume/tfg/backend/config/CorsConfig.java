@@ -23,8 +23,14 @@ public class CorsConfig implements WebMvcConfigurer {
      *
      * @param registry the CORS registry.
      */
+    /**
+     * Registers CORS rules for API endpoints.
+     *
+     * @param registry registry where CORS rules are configured
+     */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        // Applies CORS rules to all API endpoints
         registry.addMapping("/api/**")
                 .allowedOrigins(allowedOrigins)
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")

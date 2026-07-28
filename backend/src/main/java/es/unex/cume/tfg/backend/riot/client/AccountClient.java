@@ -19,6 +19,13 @@ public class AccountClient {
     private final BaseUrlBuilder baseUrlBuilder;
     private final RiotErrorHandler riotErrorHandler;
 
+    /**
+     * Creates the Riot account client.
+     *
+     * @param restClient shared REST client
+     * @param baseUrlBuilder Riot URL builder
+     * @param riotErrorHandler Riot error handler
+     */
     public AccountClient(RestClient restClient, BaseUrlBuilder baseUrlBuilder, RiotErrorHandler riotErrorHandler) {
         this.restClient = restClient;
         this.baseUrlBuilder = baseUrlBuilder;
@@ -26,7 +33,7 @@ public class AccountClient {
     }
 
     /**
-     * Fetches Riot account data from a Riot ID.
+     * Gets Riot account data from a Riot ID.
      *
      * @param platform the Riot platform used to infer the routing region.
      * @param gameName the Riot game name.
@@ -34,6 +41,7 @@ public class AccountClient {
      * @return the Riot account DTO.
      */
     public AccountDto fetchByRiotId(Platform platform, String gameName, String tagLine) {
+        // Builds the regional Account-V1 URL
         String baseUrl = baseUrlBuilder.buildRoutingBaseUrl(platform); // europe.api.riotgames.com
 
         URI uri = UriComponentsBuilder
@@ -43,6 +51,7 @@ public class AccountClient {
                 .encode()
                 .toUri();
 
+        // Sends the request and maps the account response
         return restClient.get()
                 .uri(uri)
                 .retrieve()
