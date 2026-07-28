@@ -24,8 +24,9 @@ function App() {
                 <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                     <Link
                         to="/"
-                        className="w-fit text-3xl font-black text-white focus-visible:outline-2 focus-visible:outline-cyan-300"
+                        className="flex w-fit items-center gap-2 text-3xl font-black text-white focus-visible:outline-2 focus-visible:outline-cyan-300"
                     >
+                        <img src="/favicon.svg" alt="" className="h-9 w-9" />
                         Easy<span className="text-cyan-300">Rift</span>
                     </Link>
 
