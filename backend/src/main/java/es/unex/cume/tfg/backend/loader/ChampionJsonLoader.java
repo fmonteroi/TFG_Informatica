@@ -39,10 +39,18 @@ public class ChampionJsonLoader {
 
             List<ChampionSeed> championSeeds = new ArrayList<>();
 
-            // Converts each JSON champion into an initialization entry
-            for (ChampionJsonData championJsonData : championJsonFile.data().values()) {
+            // Converts standard JSON champions into initialization entries
+            for (Map.Entry<String, ChampionJsonData> entry : championJsonFile.data().entrySet()) {
+
+                // Ignores special game mode champion variants
+                if (entry.getKey().startsWith("Jade_")) {
+                    continue;
+                }
+                ChampionJsonData championJsonData = entry.getValue();
+
                 Integer championId = Integer.valueOf(championJsonData.key());
                 String championName = championJsonData.name();
+
                 championSeeds.add(new ChampionSeed(championId, championName));
             }
 

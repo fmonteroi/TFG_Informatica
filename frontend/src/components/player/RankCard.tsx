@@ -16,6 +16,20 @@ function rankWinRate(rank: RankedRankDto) {
     }
 }
 
+function rankLabel(rank: RankedRankDto) {
+    const tierLabel = formatRank(rank.tier)
+
+    if (
+        rank.tier === 'MASTER' ||
+        rank.tier === 'GRANDMASTER' ||
+        rank.tier === 'CHALLENGER'
+    ) {
+        return tierLabel
+    }
+
+    return `${tierLabel} ${rank.rank}`
+}
+
 function RankCard({ title, rank }: RankCardProps) {
     let rankContent
 
@@ -31,7 +45,7 @@ function RankCard({ title, rank }: RankCardProps) {
 
                     <div className="min-w-0 flex-1">
                         <p className="text-lg font-bold text-slate-100">
-                            {formatRank(rank.tier)} {rank.rank}
+                            {rankLabel(rank)}
                         </p>
 
                         <div className="mt-1 flex items-center justify-between gap-2">
