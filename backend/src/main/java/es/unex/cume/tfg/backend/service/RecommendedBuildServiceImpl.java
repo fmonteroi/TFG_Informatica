@@ -1,5 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
+import es.unex.cume.tfg.backend.loader.ItemJsonLoader;
 import es.unex.cume.tfg.backend.model.RecommendedBuild;
 import es.unex.cume.tfg.backend.model.Role;
 import es.unex.cume.tfg.backend.repository.BuildRepository;
@@ -26,6 +27,7 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
     private final ParticipationRepository participationRepository;
     private final RecommendedBuildRepository recommendedBuildRepository;
     private final RankedDataService rankedDataService;
+    private final ItemJsonLoader itemJsonLoader;
 
     /**
      * Creates the recommended build service.
@@ -34,12 +36,15 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
      * @param participationRepository    participation repository
      * @param recommendedBuildRepository recommendation repository
      * @param rankedDataService          ranked data service
+     * @param itemJsonLoader             item catalog loader
      */
-    public RecommendedBuildServiceImpl(BuildRepository buildRepository, ParticipationRepository participationRepository, RecommendedBuildRepository recommendedBuildRepository, RankedDataService rankedDataService) {
+    public RecommendedBuildServiceImpl(BuildRepository buildRepository, ParticipationRepository participationRepository,
+                                       RecommendedBuildRepository recommendedBuildRepository, RankedDataService rankedDataService, ItemJsonLoader itemJsonLoader) {
         this.buildRepository = buildRepository;
         this.participationRepository = participationRepository;
         this.recommendedBuildRepository = recommendedBuildRepository;
         this.rankedDataService = rankedDataService;
+        this.itemJsonLoader = itemJsonLoader;
     }
 
     /**
@@ -67,11 +72,18 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
 
         Map<ChampionRoleKey, Long> gamesByChampionAndRole = getGamesByChampionAndRole(roleGames);
 
-        // Groups complete builds and their match results
+        // Groups builds and their match results
         List<RecommendedBuildAggregate> buildAggregates = buildRepository.aggregateRankedBuilds(rankedQueueIds, currentPatch);
 
+        // Removes builds containing components or incomplete items
+        Set<Integer> completedItemIds = itemJsonLoader.loadCompletedItemIds();
+        List<RecommendedBuildAggregate> completedBuildAggregates = filterCompletedBuilds(buildAggregates, completedItemIds);
+
+        // Gets the most played build for each champion and role
+        Map<ChampionRoleKey, Long> maxBuildGamesByChampionAndRole = getMaxBuildGamesByChampionAndRole(completedBuildAggregates);
+
         // Selects one weighted recommendation for each champion and role
-        Map<ChampionRoleKey, RecommendedBuildAggregate> bestBuilds = findBestBuilds(buildAggregates, gamesByChampionAndRole);
+        Map<ChampionRoleKey, RecommendedBuildAggregate> bestBuilds = findBestBuilds(completedBuildAggregates, gamesByChampionAndRole, maxBuildGamesByChampionAndRole);
 
         // Reuses current recommendations and keeps old ones for later removal
         Map<ChampionRoleKey, RecommendedBuild> existingBuilds = findExistingBuilds();
@@ -136,13 +148,40 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
     }
 
     /**
+     * Maps the most played build for each champion and role.
+     *
+     * @param aggregates grouped build results
+     * @return maximum build games by champion and role
+     */
+    private Map<ChampionRoleKey, Long> getMaxBuildGamesByChampionAndRole(List<RecommendedBuildAggregate> aggregates) {
+        Map<ChampionRoleKey, Long> maxBuildGames = new HashMap<>();
+
+        for (RecommendedBuildAggregate aggregate : aggregates) {
+            Integer championId = aggregate.champion().getChampionId();
+
+            ChampionRoleKey key = new ChampionRoleKey(championId, aggregate.role());
+
+            Long currentMax = maxBuildGames.get(key);
+
+            if (currentMax == null || aggregate.gamesPlayed() > currentMax) {
+                maxBuildGames.put(key, aggregate.gamesPlayed());
+            }
+        }
+
+        return maxBuildGames;
+    }
+
+    /**
      * Finds the highest scoring build for each champion and role.
      *
-     * @param aggregates             grouped build results
-     * @param gamesByChampionAndRole games played by each champion and role
+     * @param aggregates                     grouped build results
+     * @param gamesByChampionAndRole         games played by each champion and role
+     * @param maxBuildGamesByChampionAndRole most played build games by champion and role
      * @return best grouped build by champion and role
      */
-    private Map<ChampionRoleKey, RecommendedBuildAggregate> findBestBuilds(List<RecommendedBuildAggregate> aggregates, Map<ChampionRoleKey, Long> gamesByChampionAndRole) {
+    private Map<ChampionRoleKey, RecommendedBuildAggregate> findBestBuilds(List<RecommendedBuildAggregate> aggregates,
+                                                                           Map<ChampionRoleKey, Long> gamesByChampionAndRole, Map<ChampionRoleKey, Long> maxBuildGamesByChampionAndRole) {
+
         Map<ChampionRoleKey, RecommendedBuildAggregate> bestBuilds = new HashMap<>();
         Map<ChampionRoleKey, Double> bestScores = new HashMap<>();
 
@@ -151,17 +190,17 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
             ChampionRoleKey key = new ChampionRoleKey(championId, aggregate.role());
 
             Long totalGames = gamesByChampionAndRole.get(key);
+            Long maxBuildGames = maxBuildGamesByChampionAndRole.get(key);
 
-            if (totalGames == null || totalGames < MIN_GAMES_PLAYED) {
+            if (totalGames == null || totalGames < MIN_GAMES_PLAYED || maxBuildGames == null) {
                 continue;
             }
 
-            double pickRate = calculateRate(aggregate.gamesPlayed(), totalGames);
+            double normalizedPickRate = calculateRatio(aggregate.gamesPlayed(), maxBuildGames);
+            double winRate = calculateRatio(aggregate.wins(), aggregate.gamesPlayed());
 
-            double winRate = calculateRate(aggregate.wins(), aggregate.gamesPlayed());
-
-            // Combines pick rate and win rate using configurable weights
-            double score = PICK_RATE_WEIGHT * pickRate + WIN_RATE_WEIGHT * winRate;
+            // Combines normalized pick rate and win rate
+            double score = PICK_RATE_WEIGHT * normalizedPickRate + WIN_RATE_WEIGHT * winRate;
 
             Double bestScore = bestScores.get(key);
 
@@ -182,13 +221,63 @@ public class RecommendedBuildServiceImpl implements RecommendedBuildService {
     }
 
     /**
-     * Calculates a ratio.
+     * Keeps builds containing only completed main items.
+     *
+     * @param aggregates       grouped build results
+     * @param completedItemIds completed item identifiers
+     * @return builds containing only completed items
+     */
+    private List<RecommendedBuildAggregate> filterCompletedBuilds(List<RecommendedBuildAggregate> aggregates, Set<Integer> completedItemIds) {
+        List<RecommendedBuildAggregate> completedBuilds = new ArrayList<>();
+
+        for (RecommendedBuildAggregate aggregate : aggregates) {
+            if (hasOnlyCompletedItems(aggregate, completedItemIds)) {
+                completedBuilds.add(aggregate);
+            }
+        }
+
+        return completedBuilds;
+    }
+
+    /**
+     * Checks whether all six main inventory items are completed.
+     *
+     * @param aggregate        grouped build result
+     * @param completedItemIds completed item identifiers
+     * @return true when every main item is completed
+     */
+    private boolean hasOnlyCompletedItems(RecommendedBuildAggregate aggregate, Set<Integer> completedItemIds) {
+        if (!completedItemIds.contains(aggregate.item0())) {
+            return false;
+        }
+
+        if (!completedItemIds.contains(aggregate.item1())) {
+            return false;
+        }
+
+        if (!completedItemIds.contains(aggregate.item2())) {
+            return false;
+        }
+
+        if (!completedItemIds.contains(aggregate.item3())) {
+            return false;
+        }
+
+        if (!completedItemIds.contains(aggregate.item4())) {
+            return false;
+        }
+
+        return completedItemIds.contains(aggregate.item5());
+    }
+
+    /**
+     * Calculates a ratio between zero and one.
      *
      * @param value matching amount
      * @param total total amount
      * @return calculated ratio
      */
-    private double calculateRate(long value, long total) {
+    private double calculateRatio(long value, long total) {
         if (total == 0) {
             return 0.0;
         }

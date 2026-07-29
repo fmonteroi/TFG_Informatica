@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -144,18 +145,60 @@ public class ParticipationServiceImpl implements ParticipationService {
      * @return created build
      */
     private Build dtoToBuild(MatchDto.Participant p, Participation participation) {
+        // Sorts main items so equal builds share the same representation
+        List<Integer> items = getSortedItems(p);
+
         Build build = new Build();
-        build.setItem0(p.item0());
-        build.setItem1(p.item1());
-        build.setItem2(p.item2());
-        build.setItem3(p.item3());
-        build.setItem4(p.item4());
-        build.setItem5(p.item5());
+
+        build.setItem0(items.get(0));
+        build.setItem1(items.get(1));
+        build.setItem2(items.get(2));
+        build.setItem3(items.get(3));
+        build.setItem4(items.get(4));
+        build.setItem5(items.get(5));
         build.setItem6(p.item6());
         build.setRoleBoundItem(p.roleBoundItem());
         build.setSummoner1Id(p.summoner1Id());
         build.setSummoner2Id(p.summoner2Id());
         build.setParticipation(participation);
         return build;
+    }
+
+    /**
+     * Gets the main build items in a consistent order.
+     *
+     * @param participant Riot participant data
+     * @return sorted item identifiers
+     */
+    private List<Integer> getSortedItems(MatchDto.Participant participant) {
+        List<Integer> items = new ArrayList<>();
+
+        addItem(items, participant.item0());
+        addItem(items, participant.item1());
+        addItem(items, participant.item2());
+        addItem(items, participant.item3());
+        addItem(items, participant.item4());
+        addItem(items, participant.item5());
+
+        Collections.sort(items);
+
+        // Fills the list with 0s until it has 6 elements
+        while (items.size() < 6) {
+            items.add(0);
+        }
+
+        return items;
+    }
+
+    /**
+     * Adds a valid item to the build.
+     *
+     * @param items build items
+     * @param item item identifier
+     */
+    private void addItem(List<Integer> items, Integer item) {
+        if (item != null && item != 0) {
+            items.add(item);
+        }
     }
 }

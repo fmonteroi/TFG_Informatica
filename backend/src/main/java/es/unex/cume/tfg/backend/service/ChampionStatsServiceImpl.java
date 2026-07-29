@@ -5,7 +5,6 @@ import es.unex.cume.tfg.backend.model.ChampionStats;
 import es.unex.cume.tfg.backend.model.Tier;
 import es.unex.cume.tfg.backend.repository.ChampionRepository;
 import es.unex.cume.tfg.backend.repository.ChampionStatsRepository;
-import es.unex.cume.tfg.backend.repository.MatchRepository;
 import es.unex.cume.tfg.backend.repository.projection.ChampionStatsAggregate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +21,11 @@ import java.util.Optional;
 @Service
 public class ChampionStatsServiceImpl implements ChampionStatsService {
 
+    private static final double PICK_RATE_WEIGHT = 0.4;
+    private static final double WIN_RATE_WEIGHT = 0.6;
+
     private final ChampionRepository championRepository;
     private final ChampionStatsRepository championStatsRepository;
-    private final MatchRepository matchRepository;
     private final RankedDataService rankedDataService;
 
     /**
@@ -32,13 +33,11 @@ public class ChampionStatsServiceImpl implements ChampionStatsService {
      *
      * @param championRepository      champion repository
      * @param championStatsRepository champion statistics repository
-     * @param matchRepository         match repository
      * @param rankedDataService       ranked data service
      */
-    public ChampionStatsServiceImpl(ChampionRepository championRepository, ChampionStatsRepository championStatsRepository, MatchRepository matchRepository, RankedDataService rankedDataService) {
+    public ChampionStatsServiceImpl(ChampionRepository championRepository, ChampionStatsRepository championStatsRepository, RankedDataService rankedDataService) {
         this.championRepository = championRepository;
         this.championStatsRepository = championStatsRepository;
-        this.matchRepository = matchRepository;
         this.rankedDataService = rankedDataService;
     }
 
@@ -64,8 +63,8 @@ public class ChampionStatsServiceImpl implements ChampionStatsService {
         // Gets champion values from ranked matches in the current patch
         List<ChampionStatsAggregate> aggregates = championRepository.aggregateChampionStats(rankedQueueIds, currentPatch);
 
-        // Counts the matches used as the pick rate denominator
-        long totalMatches = matchRepository.countRankedMatchesByPatch(rankedQueueIds, currentPatch);
+        // Finds how many games the most played champion has
+        long maxChampionGames = findMaxChampionGames(aggregates);
 
         // Reuses existing entities because they share their ID with champions
         Map<Integer, ChampionStats> existingStats = findExistingStats();
@@ -105,7 +104,7 @@ public class ChampionStatsServiceImpl implements ChampionStatsService {
             if (games == 0) {
                 stats.setTier(Tier.C);
             } else {
-                double score = calculateChampionScore(stats, totalMatches);
+                double score = calculateChampionScore(stats, maxChampionGames);
                 championScores.add(new ChampionScore(stats, score));
             }
 
@@ -210,14 +209,15 @@ public class ChampionStatsServiceImpl implements ChampionStatsService {
     /**
      * Calculates the weighted score used for champion classification.
      *
-     * @param stats        calculated champion statistics
-     * @param totalMatches total stored matches
+     * @param stats            calculated champion statistics
+     * @param maxChampionGames games played with the most played champion
      * @return weighted champion score
      */
-    private double calculateChampionScore(ChampionStats stats, long totalMatches) {
-        double pickRate = calculateRate(stats.getGamesPlayed(), totalMatches);
+    private double calculateChampionScore(ChampionStats stats, long maxChampionGames) {
+        double normalizedPickRate = calculateRatio(stats.getGamesPlayed(), maxChampionGames);
+        double winRate = stats.getWinRate() / 100.0;
 
-        return stats.getWinRate() * 0.6 + pickRate * 0.4;
+        return PICK_RATE_WEIGHT * normalizedPickRate + WIN_RATE_WEIGHT * winRate;
     }
 
     /**
@@ -269,6 +269,41 @@ public class ChampionStatsServiceImpl implements ChampionStatsService {
         }
 
         return Tier.E;
+    }
+
+    /**
+     * Finds the highest number of games played with one champion.
+     *
+     * @param aggregates grouped values for each champion
+     * @return highest champion game count
+     */
+    private long findMaxChampionGames(List<ChampionStatsAggregate> aggregates) {
+        long maxChampionGames = 0;
+
+        for (ChampionStatsAggregate aggregate : aggregates) {
+            long gamesPlayed = valueOrZero(aggregate.gamesPlayed());
+
+            if (gamesPlayed > maxChampionGames) {
+                maxChampionGames = gamesPlayed;
+            }
+        }
+
+        return maxChampionGames;
+    }
+
+    /**
+     * Calculates a ratio between zero and one.
+     *
+     * @param value matching amount
+     * @param total total amount
+     * @return calculated ratio
+     */
+    private double calculateRatio(long value, long total) {
+        if (total == 0) {
+            return 0.0;
+        }
+
+        return (double) value / total;
     }
 
     /**

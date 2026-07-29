@@ -1,4 +1,4 @@
-package es.unex.cume.tfg.backend.config;
+package es.unex.cume.tfg.backend.initializer;
 
 import es.unex.cume.tfg.backend.service.ChampionService;
 import org.springframework.boot.CommandLineRunner;

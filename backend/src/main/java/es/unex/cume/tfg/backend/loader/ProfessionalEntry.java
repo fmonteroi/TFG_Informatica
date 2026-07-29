@@ -1,4 +1,4 @@
-package es.unex.cume.tfg.backend.config;
+package es.unex.cume.tfg.backend.loader;
 
 import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Role;

@@ -28,7 +28,7 @@ public class PlayerStatsServiceImpl implements PlayerStatsService {
     /**
      * Creates the player statistics service.
      *
-     * @param playerStatsRepository player statistics repository
+     * @param playerStatsRepository   player statistics repository
      * @param participationRepository participation repository
      */
     public PlayerStatsServiceImpl(PlayerStatsRepository playerStatsRepository, ParticipationRepository participationRepository) {
@@ -77,7 +77,7 @@ public class PlayerStatsServiceImpl implements PlayerStatsService {
         // Gets per-champion totals for the weighted best champion score
         List<PlayerChampionStatsAggregate> championAggregates = participationRepository.aggregatePlayerStatsByChampion(player.getPuuid());
 
-        stats.setBestChampion(findBestChampion(championAggregates, games));
+        stats.setBestChampion(findBestChampion(championAggregates));
 
         player.setStats(stats);
 
@@ -125,10 +125,25 @@ public class PlayerStatsServiceImpl implements PlayerStatsService {
     }
 
     /**
+     * Calculates a ratio between zero and one.
+     *
+     * @param value matching amount
+     * @param total total amount
+     * @return calculated ratio
+     */
+    private double calculateRatio(long value, long total) {
+        if (total == 0) {
+            return 0.0;
+        }
+
+        return (double) value / total;
+    }
+
+    /**
      * Calculates KDA while supporting games without deaths.
      *
-     * @param kills total kills
-     * @param deaths total deaths
+     * @param kills   total kills
+     * @param deaths  total deaths
      * @param assists total assists
      * @return calculated KDA
      */
@@ -144,19 +159,21 @@ public class PlayerStatsServiceImpl implements PlayerStatsService {
      * Finds the champion with the best weighted score.
      *
      * @param aggregates grouped values for each champion
-     * @param totalGames player's total games
      * @return best champion or null when no games exist
      */
-    private Champion findBestChampion(List<PlayerChampionStatsAggregate> aggregates, long totalGames) {
-        if (totalGames == 0 || aggregates.isEmpty()) {
+    private Champion findBestChampion(List<PlayerChampionStatsAggregate> aggregates) {
+        if (aggregates.isEmpty()) {
             return null;
         }
+
+        // Finds how many games the most played champion has
+        long maxChampionGames = findMaxChampionGames(aggregates);
 
         Champion bestChampion = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
         for (PlayerChampionStatsAggregate aggregate : aggregates) {
-            double score = calculateChampionScore(aggregate, totalGames);
+            double score = calculateChampionScore(aggregate, maxChampionGames);
 
             // Replaces the current champion when the score is better
             if (score > bestScore) {
@@ -169,18 +186,38 @@ public class PlayerStatsServiceImpl implements PlayerStatsService {
     }
 
     /**
+     * Finds the highest number of games played with one champion.
+     *
+     * @param aggregates grouped values for each champion
+     * @return highest champion game count
+     */
+    private long findMaxChampionGames(List<PlayerChampionStatsAggregate> aggregates) {
+        long maxChampionGames = 0;
+
+        for (PlayerChampionStatsAggregate aggregate : aggregates) {
+            long gamesPlayed = aggregate.gamesPlayed();
+
+            if (gamesPlayed > maxChampionGames) {
+                maxChampionGames = gamesPlayed;
+            }
+        }
+
+        return maxChampionGames;
+    }
+
+    /**
      * Calculates a weighted pick rate and win rate score.
      *
-     * @param aggregate grouped champion values
-     * @param totalGames player's total games
+     * @param aggregate        grouped champion values
+     * @param maxChampionGames games played with the most played champion
      * @return champion score
      */
-    private double calculateChampionScore(PlayerChampionStatsAggregate aggregate, long totalGames) {
-        double pickRate = calculateRate(aggregate.gamesPlayed(), totalGames);
-        double winRate = calculateRate(aggregate.wins(), aggregate.gamesPlayed());
+    private double calculateChampionScore(PlayerChampionStatsAggregate aggregate, long maxChampionGames) {
+        double normalizedPickRate = calculateRatio(aggregate.gamesPlayed(), maxChampionGames);
+        double winRate = calculateRatio(aggregate.wins(), aggregate.gamesPlayed());
 
-        // Weighted score: 40% pick rate, 60% win rate
-        return PICK_RATE_WEIGHT * pickRate + WIN_RATE_WEIGHT * winRate;
+        // Combines normalized pick rate and win rate
+        return PICK_RATE_WEIGHT * normalizedPickRate + WIN_RATE_WEIGHT * winRate;
     }
 
     /**

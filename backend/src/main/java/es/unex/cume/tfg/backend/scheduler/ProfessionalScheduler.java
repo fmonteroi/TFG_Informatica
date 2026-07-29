@@ -1,4 +1,4 @@
-package es.unex.cume.tfg.backend.config;
+package es.unex.cume.tfg.backend.scheduler;
 
 import es.unex.cume.tfg.backend.service.ProfessionalService;
 import org.springframework.scheduling.annotation.Scheduled;

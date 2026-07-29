@@ -1,4 +1,4 @@
-package es.unex.cume.tfg.backend.config;
+package es.unex.cume.tfg.backend.loader;
 
 import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Value;

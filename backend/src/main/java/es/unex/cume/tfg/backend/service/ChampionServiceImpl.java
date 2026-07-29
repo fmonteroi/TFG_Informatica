@@ -1,6 +1,6 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.config.ChampionJsonLoader;
+import es.unex.cume.tfg.backend.loader.ChampionJsonLoader;
 import es.unex.cume.tfg.backend.exception.ChampionNotFoundException;
 import es.unex.cume.tfg.backend.model.Champion;
 import es.unex.cume.tfg.backend.repository.ChampionRepository;

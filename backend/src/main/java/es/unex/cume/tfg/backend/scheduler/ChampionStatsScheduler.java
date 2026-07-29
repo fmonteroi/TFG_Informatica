@@ -1,4 +1,4 @@
-package es.unex.cume.tfg.backend.config;
+package es.unex.cume.tfg.backend.scheduler;
 
 import es.unex.cume.tfg.backend.service.ChampionStatsService;
 import es.unex.cume.tfg.backend.service.RecommendedBuildService;

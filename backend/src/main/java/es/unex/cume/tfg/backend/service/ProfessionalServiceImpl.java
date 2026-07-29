@@ -1,9 +1,8 @@
 package es.unex.cume.tfg.backend.service;
 
-import es.unex.cume.tfg.backend.config.ProfessionalEntry;
-import es.unex.cume.tfg.backend.config.ProfessionalJsonLoader;
+import es.unex.cume.tfg.backend.loader.ProfessionalEntry;
+import es.unex.cume.tfg.backend.loader.ProfessionalJsonLoader;
 import es.unex.cume.tfg.backend.exception.ProfessionalNotFoundException;
-import es.unex.cume.tfg.backend.model.Platform;
 import es.unex.cume.tfg.backend.model.Player;
 import es.unex.cume.tfg.backend.model.Professional;
 import es.unex.cume.tfg.backend.repository.ProfessionalRepository;
