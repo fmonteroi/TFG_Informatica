@@ -4,14 +4,12 @@ import {getCurrentGame, getMatchById, refreshPlayer, searchPlayer} from '../api/
 import PlayerSearchBar from '../components/player/PlayerSearchBar.tsx'
 import {useDragontailAssets} from '../lib/dragontail'
 import type {CurrentGameDto, MatchDetailsDto, ParticipationDto, PlayerDetailsDto} from '../types/api'
-import { safeError } from '../lib/errors'
-import { sortMatchParticipations } from '../lib/lol'
-import { CARD_CLASS } from '../lib/constants'
+import {safeError} from '../lib/errors'
+import {sortMatchParticipations} from '../lib/lol'
+import {CARD_CLASS} from '../lib/constants'
 import PlayerHeader from '../components/player/PlayerHeader.tsx'
 import PlayerSidebar from '../components/player/PlayerSidebar.tsx'
 import PlayerHistory from '../components/player/PlayerHistory.tsx'
-
-
 
 
 function Player() {
@@ -28,7 +26,7 @@ function Player() {
         )
     }
 
-    const { dataDragonVersion, championMap, summonerSpellMap, itemInfoMap } = useDragontailAssets()
+    const {dataDragonVersion, championMap, summonerSpellMap, itemInfoMap} = useDragontailAssets()
 
 
     const [playerData, setPlayerData] = useState<PlayerDetailsDto | null>(null)

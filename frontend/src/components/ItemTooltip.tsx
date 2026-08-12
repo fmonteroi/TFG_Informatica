@@ -40,14 +40,20 @@ function ItemTooltip({
 
     return (
         <div className="group relative">
-            <img
-                src={imageUrl}
-                alt={imageAlt}
-                className={`${sizeClassName} ${roundedClassName} shrink-0`}
-            />
+            <button
+                type="button"
+                aria-label={`Ver información de ${imageAlt}`}
+                className="block"
+            >
+                <img
+                    src={imageUrl}
+                    alt={imageAlt}
+                    className={`${sizeClassName} ${roundedClassName} shrink-0`}
+                />
+            </button>
 
             {itemInfo && (
-                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block">
+                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block group-focus-within:block">
                     <div className="mb-3 flex items-center gap-3">
                         <img
                             src={itemInfo.imageUrl}

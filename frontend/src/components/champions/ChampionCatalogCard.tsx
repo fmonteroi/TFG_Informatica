@@ -1,12 +1,12 @@
-import { Link } from 'react-router-dom'
-import type { ChampionDto } from '../../types/api'
+import {Link} from 'react-router-dom'
+import type {ChampionDto} from '../../types/api'
 
 type ChampionCatalogCardProps = {
     champion: ChampionDto
     icon: string | null
 }
 
-function ChampionCatalogCard({ champion, icon }: ChampionCatalogCardProps) {
+function ChampionCatalogCard({champion, icon}: ChampionCatalogCardProps) {
     let iconContent
 
     if (icon) {
