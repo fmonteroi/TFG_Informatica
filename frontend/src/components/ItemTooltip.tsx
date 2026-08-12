@@ -53,7 +53,7 @@ function ItemTooltip({
             </button>
 
             {itemInfo && (
-                <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block group-focus-within:block">
+                <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 hidden rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block group-focus-within:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-1/2 sm:mb-3 sm:w-72 sm:-translate-x-1/2">
                     <div className="mb-3 flex items-center gap-3">
                         <img
                             src={itemInfo.imageUrl}
