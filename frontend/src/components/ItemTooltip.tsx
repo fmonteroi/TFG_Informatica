@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { ItemInfo } from '../lib/dragontail'
 
 type ItemTooltipProps = {
@@ -9,12 +10,47 @@ type ItemTooltipProps = {
 }
 
 function ItemTooltip({
-                         itemId,
-                         itemInfoMap,
-                         sizeClassName = 'h-10 w-10',
-                         roundedClassName = 'rounded-xl',
-                         emptyClassName = 'border border-slate-700 bg-slate-800',
-                     }: ItemTooltipProps) {
+                     itemId,
+                     itemInfoMap,
+                     sizeClassName = 'h-10 w-10',
+                     roundedClassName = 'rounded-xl',
+                     emptyClassName = 'border border-slate-700 bg-slate-800',
+                 }: ItemTooltipProps) {
+    const [isOpen, setIsOpen] = useState(false)
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        if (!isOpen) {
+            return
+        }
+
+        function closeWhenClickingOutside(event: PointerEvent) {
+            if (!containerRef.current?.contains(event.target as Node)) {
+                setIsOpen(false)
+            }
+        }
+
+        function closeWhenPressingEscape(event: KeyboardEvent) {
+            if (event.key === 'Escape') {
+                setIsOpen(false)
+            }
+        }
+
+        function closeWhenResizing() {
+            setIsOpen(false)
+        }
+
+        document.addEventListener('pointerdown', closeWhenClickingOutside)
+        document.addEventListener('keydown', closeWhenPressingEscape)
+        window.addEventListener('resize', closeWhenResizing)
+
+        return () => {
+            document.removeEventListener('pointerdown', closeWhenClickingOutside)
+            document.removeEventListener('keydown', closeWhenPressingEscape)
+            window.removeEventListener('resize', closeWhenResizing)
+        }
+    }, [isOpen])
+
     if (!itemId || itemId === 0) {
         return (
             <div
@@ -39,10 +75,16 @@ function ItemTooltip({
     }
 
     return (
-        <div className="group relative">
+        <div ref={containerRef} className="group relative">
             <button
                 type="button"
                 aria-label={`Ver información de ${imageAlt}`}
+                aria-expanded={isOpen}
+                onClick={() => {
+                    if (window.matchMedia('(max-width: 639px)').matches) {
+                        setIsOpen(!isOpen)
+                    }
+                }}
                 className="block"
             >
                 <img
@@ -53,7 +95,10 @@ function ItemTooltip({
             </button>
 
             {itemInfo && (
-                <div className="pointer-events-none fixed inset-x-4 bottom-4 z-50 hidden rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl group-hover:block group-focus-within:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-1/2 sm:mb-3 sm:w-72 sm:-translate-x-1/2">
+                <div
+                    role="tooltip"
+                    className={`pointer-events-none fixed inset-x-4 bottom-4 z-50 rounded-2xl border border-slate-700 bg-slate-950 p-4 shadow-2xl sm:absolute sm:inset-x-auto sm:bottom-full sm:left-1/2 sm:mb-3 sm:hidden sm:w-72 sm:-translate-x-1/2 sm:group-hover:block ${isOpen ? 'block' : 'hidden'}`}
+                >
                     <div className="mb-3 flex items-center gap-3">
                         <img
                             src={itemInfo.imageUrl}
